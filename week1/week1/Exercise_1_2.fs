@@ -25,3 +25,19 @@ let rec fmt =
     | Add (lhs, rhs) -> sprintf "(%s + %s)" (fmt lhs) (fmt rhs)
     | Mul (lhs, rhs) -> sprintf "(%s * %s)" (fmt lhs) (fmt rhs)
     | Sub (lhs, rhs) -> sprintf "(%s - %s)" (fmt lhs) (fmt rhs)
+
+// (iv)
+let rec simplify =
+    function
+    | Add (CstI 0, rhs) -> rhs
+    | Add (lhs, CstI 0) -> lhs
+    | Add (CstI x, CstI y) -> CstI (x + y)
+    | Sub (lhs, CstI 0) -> lhs
+    | Sub (lhs, rhs) when lhs = rhs -> CstI 0
+    | Sub (CstI x, CstI y) -> CstI (x - y)
+    | Mul (CstI 1, rhs) -> rhs
+    | Mul (lhs, CstI 1) -> lhs
+    | Mul (CstI 0, _)
+    | Mul (_, CstI 0) -> CstI 0
+    | Mul (CstI x, CstI y) -> CstI (x * y)
+    | aExpr -> aExpr
