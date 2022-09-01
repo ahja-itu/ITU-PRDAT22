@@ -38,27 +38,24 @@ let e3 = Prim("+", Prim("*", Var "b", CstI 9), Var "a")
 
 (* Evaluation within an environment *)
 
+let eq a b = if a = b then 1 else 0
+
 let rec eval e (env: (string * int) list) : int =
     match e with
     | CstI i -> i
     | Var x -> lookup env x
-    | Prim ("+", e1, e2) -> eval e1 env + eval e2 env
-    | Prim ("*", e1, e2) -> eval e1 env * eval e2 env
-    | Prim ("-", e1, e2) -> eval e1 env - eval e2 env
-    | Prim ("max", e1, e2) ->
-        let v1 = eval e1 env
-        let v2 = eval e2 env
-        if v1 > v2 then v1 else v2
-    | Prim ("min", e1, e2) ->
-        let v1 = eval e1 env
-        let v2 = eval e2 env
-        if v1 > v2 then v2 else v1
-    | Prim ("==", e1, e2) ->
-        if eval e1 env = eval e2 env then
-            1
-        else
-            0
-    | Prim _ -> failwith "unknown primitive"
+    | Prim (op, e1, e2) ->
+        let res1 = eval e1 env
+        let res2 = eval e2 env
+
+        match op with
+        | "+" -> (+) res1 res2
+        | "*" -> (*) res1 res2
+        | "-" -> (-) res1 res2
+        | "max" -> max res1 res2
+        | "min" -> min res1 res2
+        | "==" -> eq res1 res2
+        | _ -> failwith "unknown primitive"
 
 let e1v = eval e1 env
 let e2v1 = eval e2 env
