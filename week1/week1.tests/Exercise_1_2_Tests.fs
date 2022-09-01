@@ -65,3 +65,23 @@ let ``simplify simplifies multiplication correctly`` () =
     Assert.Equal(simplify ae6, Var "y")
     Assert.Equal(simplify ae7, Mul(CstI 2, Var "y"))
     Assert.Equal(simplify ae8, CstI 4)
+
+[<Fact>]
+let ``Symbolic differentiation performs correctly`` () = 
+    let ae1 = CstI 100
+    let ae2 = Var "x"
+    let ae3 = Var "y"
+    let ae4 = Add ((Var "x"), (Var "y"))
+    let ae5 = Sub (CstI 100, Var "x")
+    let ae6 = Mul (CstI 100, CstI 100)
+
+    Assert.Equal(sdiff "x"ae1, CstI 0)
+    Assert.Equal(sdiff "x"ae2, CstI 1)
+    Assert.Equal(sdiff "x"ae3, CstI 0)
+    Assert.Equal(sdiff "x"ae4, Add (CstI 1, CstI 0))
+    Assert.Equal(sdiff "x"ae5, Sub (CstI 0, CstI 1))
+    Assert.Equal(sdiff "x"ae6, Add (Mul (CstI 0, CstI 100), Mul (CstI 100, CstI 0)))
+
+
+
+

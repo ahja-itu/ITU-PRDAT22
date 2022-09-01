@@ -41,3 +41,15 @@ let rec simplify =
     | Mul (_, CstI 0) -> CstI 0
     | Mul (CstI x, CstI y) -> CstI (x * y)
     | aExpr -> aExpr
+
+// (v)
+// sdiff: symbolic differentiation
+let rec sdiff x =
+    function
+    | CstI _ -> CstI 0
+    | Var y when y <> x -> CstI 0
+    | Var _ -> CstI 1
+    | Add (e1, e2) -> Add (sdiff x e1, sdiff x e2)
+    | Sub (e1, e2) -> Sub (sdiff x e1, sdiff x e2)
+    | Mul (e1, e2) -> Add (Mul (sdiff x e1, e2), Mul(e1, sdiff x e2))
+
