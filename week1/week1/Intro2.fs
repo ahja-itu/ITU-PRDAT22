@@ -28,23 +28,23 @@ type expr =
     | CstI of int
     | Var of string
     | Prim of string * expr * expr
-    | If of expr * expr * expr
+    | If of expr * expr * expr // Exercise 1.1.v
 
 let e1 = CstI 17
-
 let e2 = Prim("+", CstI 3, Var "a")
-
 let e3 = Prim("+", Prim("*", Var "b", CstI 9), Var "a")
 
 
 (* Evaluation within an environment *)
 
+// Used as helper for exercise 1.1.v
 let eq a b = if a = b then 1 else 0
 
 let rec eval e (env: (string * int) list) : int =
     match e with
     | CstI i -> i
     | Var x -> lookup env x
+    // Exercise 1.1.{i -> v}
     | Prim (op, e1, e2) ->
         let res1 = eval e1 env
         let res2 = eval e2 env
