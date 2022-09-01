@@ -28,6 +28,7 @@ type expr =
     | CstI of int
     | Var of string
     | Prim of string * expr * expr
+    | If of expr * expr * expr
 
 let e1 = CstI 17
 
@@ -56,6 +57,11 @@ let rec eval e (env: (string * int) list) : int =
         | "min" -> min res1 res2
         | "==" -> eq res1 res2
         | _ -> failwith "unknown primitive"
+    | If (e1, e2, e3) ->
+        if eval e1 env <> 0 then
+            eval e2 env
+        else
+            eval e3 env
 
 let e1v = eval e1 env
 let e2v1 = eval e2 env

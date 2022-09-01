@@ -27,3 +27,11 @@ let ``== should determine if integers are equal`` (a: int, b: int, expected: int
     let exp = Prim("==", CstI a, CstI b)
     let res = eval exp []
     Assert.Equal(expected, res)
+
+[<Theory>]
+[<InlineData(1, 2, 3, 2)>]
+[<InlineData(0, 2, 3, 3)>]
+let ``If expressions should execute the right body`` (cond: int, res_if: int, res_else: int, expected: int) =
+    let exp = If(CstI cond, CstI res_if, CstI res_else)
+    let res = eval exp []
+    Assert.Equal(expected, res)
