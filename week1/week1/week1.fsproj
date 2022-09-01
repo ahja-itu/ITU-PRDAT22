@@ -7,6 +7,7 @@
 
   <ItemGroup>
     <Compile Include="Intro2.fs" />
+    <Compile Include="Exercise_1_2.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
