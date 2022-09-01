@@ -27,6 +27,3 @@ let ``== should determine if integers are equal`` (a: int, b: int, expected: int
     let exp = Prim("==", CstI a, CstI b)
     let res = eval exp []
     Assert.Equal(expected, res)
-
-
-
