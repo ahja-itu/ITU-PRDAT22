@@ -1,4 +1,4 @@
-module Exercise_2_1
+module Exercise_2
 
 (* Taken from Intcomp1.fs but Let has been changed *)
 type expr =
