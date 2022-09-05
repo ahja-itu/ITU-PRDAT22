@@ -53,3 +53,14 @@ let rec minus (xs, ys) =
             minus (xr, ys)
         else
             x :: minus (xr, ys)
+
+(* Taken from Intcomp1.fs but handling of Let has been changed *)
+let rec freevars e : string list =
+    match e with
+    | CstI i -> []
+    | Var x -> [ x ]
+    // Exercise 2.2 - start
+    | Let (xs, ebody) ->
+        List.foldBack (fun (x, erhs) acc -> union (freevars erhs, minus (acc, [ x ]))) xs (freevars ebody)
+    // Exercise 2.2 - end
+    | Prim (ope, e1, e2) -> union (freevars e1, freevars e2)
