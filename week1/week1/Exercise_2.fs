@@ -66,13 +66,7 @@ let rec freevars e : string list =
     | Prim (ope, e1, e2) -> union (freevars e1, freevars e2)
 
 
-(* ---------------------------------------------------------------------- *)
-(* ---------- Exercise 2.3, source code taken from Intcom1.fs ----------- *)
-(* ---------------------------------------------------------------------- *)
-
-(* Compilation to target expressions with numerical indexes instead of
-   symbolic variable names.  *)
-
+(* Taken from Intcomp1.fs but handling of Let has been changed *)
 type texpr = (* target expressions *)
     | TCstI of int
     | TVar of int (* index into runtime environment *)
@@ -80,25 +74,21 @@ type texpr = (* target expressions *)
     | TPrim of string * texpr * texpr
 
 
-(* Map variable name to variable index at compile-time *)
-
+(* Taken from Intcomp1.fs *)
 let rec getindex vs x =
     match vs with
     | [] -> failwith "Variable not found"
     | y :: yr -> if x = y then 0 else 1 + getindex yr x
 
-(* Compiling from expr to texpr *)
-
+(* Taken from Intcomp1.fs but handling of Let has been changed *)
 let rec tcomp (e: expr) (cenv: string list) : texpr =
     match e with
     | CstI i -> TCstI i
     | Var x -> TVar(getindex cenv x)
+    // Exercise 2.3 - start
     | Let (xs, ebody) ->
-        // List.fold (fun env' (x, erhs) -> (x, eval erhs env') :: env') env xs        
-        let res = List.foldBack (fun (x, erhs) (ebody', cenv') ->
-            (TLet (tcomp erhs cenv', tcomp ebody' (x :: cenv')), x :: cenv')) xs (ebody, cenv)
-
-
-        let cenv1 = x :: cenv
-        TLet(tcomp erhs cenv, tcomp ebody cenv1)
+        match xs with
+        | [] -> tcomp ebody cenv
+        | (x, erhs) :: xs' -> TLet(tcomp erhs cenv, tcomp (Let(xs', ebody)) (x :: cenv))
+    // Exercise 2.3 - start end
     | Prim (ope, e1, e2) -> TPrim(ope, tcomp e1 cenv, tcomp e2 cenv)
