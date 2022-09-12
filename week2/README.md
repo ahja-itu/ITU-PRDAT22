@@ -12,3 +12,4 @@ There are two folders - `week2` containing our solutions and `week2.tests` conta
 - PLC 2.5 has been solved by the lecturer.
 - PLC 3.2 has been written to a Markdown file at `week2/Exercise_PLC_3_2.md` along with corresponding images.
 - BCD 2.1 has been written to a Markdown file at `week2/Exercise_BCD_2_1.md`
+- BCD 2.2 has been written to a Markdown file at `week2/Exercise_BCD_2_2.md` along with corresponding images.
