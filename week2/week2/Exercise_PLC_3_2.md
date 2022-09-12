@@ -28,3 +28,7 @@ We have used the following table to construct the DFA from the NFA:
 | `*s4*`    | `s2`    | `s3`    | `{ 1, 2, 4, 6, *7* }` |
 
 Items surrounded by `*` signify an accepting state.
+
+Visually, the DFA is as such:
+
+![DFA picture](./Exercise_PLC_3_2_DFA.png)
