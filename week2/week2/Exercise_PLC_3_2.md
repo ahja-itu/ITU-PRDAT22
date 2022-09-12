@@ -31,4 +31,4 @@ Items surrounded by `*` signify an accepting state.
 
 Visually, the DFA is as such:
 
-![NFA picture](./Exercise_PLC_3_2_DFA.png)
+![DFA picture](./Exercise_PLC_3_2_DFA.png)
