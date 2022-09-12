@@ -20,10 +20,11 @@ To demonstrate this, you can see that the correct strings are matched (and not m
 
 We have used the following table to construct the DFA from the NFA:
 
-| DFA state | move(a) | move(b) | NFA states |
-|-----------|---------|---------|------------|
-|           |         |         |            |
-|           |         |         |            |
-|           |         |         |            |
+| DFA state | move(a) | move(b) | NFA states            |
+|-----------|---------|---------|-----------------------|
+| `*s1*`    | `s2`    | `s3`    | `{ 1, 2, 4, *7* }`    |
+| `*s2*`    | `{}`    | `s4`    | `{ 5, *8* }`          |
+| `*s3*`    | `s2`    | `s3`    | `{ 1, 2, 3, 4, *7* }` |
+| `*s4*`    | `s2`    | `s3`    | `{ 1, 2, 4, 6, *7* }` |
 
-Items in bold signify an accepting state.
+Items surrounded by `*` signify an accepting state.
