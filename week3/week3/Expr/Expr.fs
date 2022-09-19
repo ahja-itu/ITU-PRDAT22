@@ -6,6 +6,7 @@ module Expr
 
 open System.IO
 open Absyn
+open Parse
 
 (* From file expr/expr.sml * Simple arithmetic expressions *)
  
@@ -333,3 +334,9 @@ let s3 = scomp e3 []
 let intsToFile (inss : int list) (fname : string) = 
     let text = String.concat " " (List.map string inss)
     System.IO.File.WriteAllText(fname, text);;
+
+(* Exercise 3.5 *)
+
+let compString: string -> sinstr list 
+      = fun source ->
+            source |> Parse.fromString |> fun e -> scomp e []
