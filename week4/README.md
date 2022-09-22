@@ -59,6 +59,84 @@ val it : int = 9
 
 ## PLC 4.2
 
+- Compute sum program:
+
+```fsi
+> fromString "let sum n = if n < 0 then 0 else n + (sum (n - 1)) in sum 1000 end";;
+val it : Absyn.expr =
+  Letfun
+    ("sum", "n",
+     If
+       (Prim ("<", Var "n", CstI 0), CstI 0,
+        Prim ("+", Var "n", Call (Var "sum", Prim ("-", Var "n", CstI 1)))),
+     Call (Var "sum", CstI 1000))
+
+> run it;;
+val it : int = 500500
+```
+
+- Compute 3ˆ8
+
+```fsi
+> fromString "let threePowE n = if n < 1 then 1 else 3 * (threePowE (n - 1)) in threePowE 8 end";;
+val it : Absyn.expr =
+  Letfun
+    ("threePowE", "n",
+     If
+       (Prim ("<", Var "n", CstI 1), CstI 1,
+        Prim
+          ("*", CstI 3, Call (Var "threePowE", Prim ("-", Var "n", CstI 1)))),
+     Call (Var "threePowE", CstI 8))
+
+> run it;;
+val it : int = 6561
+```
+
+- Compute 3ˆ0 + .. 3ˆ11
+
+
+
+```fsi
+// Program:
+// let threePowE e = 
+//   if e < 1 then 1 else 3 * (threePowE (e - 1)) 
+// in 
+//   let sum n = 
+//     if n < 1 then 1 else (threePowE n) + (sum (n - 1)) 
+//   in 
+//     sum 11 
+//   end 
+// end
+
+> fromString "let threePowE e = if e < 1 then 1 else 3 * (threePowE (e - 1)) in let sum n = if n < 1 then 1 else (threePowE n) + (sum (n - 1)) in sum 11 end end
+- ";;
+val it : Absyn.expr =
+  Letfun
+    ("threePowE", "e",
+     If
+       (Prim ("<", Var "e", CstI 1), CstI 1,
+        Prim
+          ("*", CstI 3, Call (Var "threePowE", Prim ("-", Var "e", CstI 1)))),
+     Letfun
+       ("sum", "n",
+        If
+          (Prim ("<", Var "n", CstI 1), CstI 1,
+           Prim
+             ("+", Call (Var "threePowE", Var "n"),
+              Call (Var "sum", Prim ("-", Var "n", CstI 1)))),
+        Call (Var "sum", CstI 11)))
+
+> run it;;
+val it : int = 265720
+```
+
+- Compute 1^8 + .. - 10^8
+
+```fsi
+> fromString "let sum n = if n < 1 then 0 else (n * n * n * n * n * n * n * n) + (sum (n - 1)) in sum 10 end" |> run;;
+val it : int = 167731333
+```
+
 ## PLC 4.3
 
 ## PLC 4.4
