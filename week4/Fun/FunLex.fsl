@@ -53,6 +53,8 @@ rule Token = parse
   | '*'             { TIMES }                     
   | '/'             { DIV }                     
   | '%'             { MOD }
+  | "&&"            { LAND }
+  | "||"            { LOR }
   | '('             { LPAR }
   | ')'             { RPAR }
   | eof             { EOF }
