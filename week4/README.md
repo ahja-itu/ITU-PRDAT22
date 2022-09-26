@@ -264,8 +264,79 @@ Apart from the above, we've also changed the example code as seen below:
 
 ## PLC 4.4
 
+This is how we solved exercise 4.4 by making changes in the `FunPar.fsy`:
 
+```diff
+commit 5e186c7c639050c166b7b079fd0d1583b3a4cff7
+Author: Andreas Wachs <andreas@wachs.dk>
+Date:   Mon Sep 26 20:05:07 2022 +0200
 
+    Solved the hard part of 4.4
 
+diff --git a/week4/Fun/FunPar.fsy b/week4/Fun/FunPar.fsy
+index c0addbf..a146b61 100644
+--- a/week4/Fun/FunPar.fsy
++++ b/week4/Fun/FunPar.fsy
+@@ -5,6 +5,7 @@
+   *)
+ 
+  open Absyn;
++ let unpack (Call(f, x)) b = Call(f, x @ [b]);
+ %}
+ 
+ %token <int> CSTINT
+@@ -27,6 +28,7 @@
+ %start Main
+ %type <Absyn.expr> Main Expr AtExpr Const
+ %type <Absyn.expr> AppExpr
++%type <string list> Names
+ 
+ %%
+ 
+@@ -56,13 +58,18 @@ AtExpr:
+     Const                               { $1                     }
+   | NAME                                { Var $1                 }
+   | LET NAME EQ Expr IN Expr END        { Let($2, $4, $6)        }
+-  | LET NAME NAME EQ Expr IN Expr END   { Letfun($2, $3, $5, $7) }
++  | LET NAME Names EQ Expr IN Expr END  { Letfun($2, $3, $5, $7) }
+   | LPAR Expr RPAR                      { $2                     }
+ ;
+ 
++Names:
++  NAME          { [$1] }
++  | NAME Names    { $1 :: $2 }
++;
++
+ AppExpr:
+-    AtExpr AtExpr                       { Call($1, $2)           }
+-  | AppExpr AtExpr                      { Call($1, $2)           }
++    AtExpr AtExpr                       { Call($1, [$2])           }
++  | AppExpr AtExpr                      { unpack $1 $2           }
+ ;
+ 
+ Const:
+```
+
+Here is an example output to verify that our solution works:
+
+```fsi
+> open Parse;;
+> open ParseAndRun;;
+> fromString "let pow x n = if n=0 then 1 else x * pow x (n-1) in pow 3 8 end"
+- ;;
+val it : Absyn.expr =
+  Letfun
+    ("pow", ["x"; "n"],
+     If
+       (Prim ("=", Var "n", CstI 0), CstI 1,
+        Prim
+          ("*", Var "x",
+           Call (Var "pow", [Var "x"; Prim ("-", Var "n", CstI 1)]))),
+     Call (Var "pow", [CstI 3; CstI 8]))
+
+> fromString "let pow x n = if n=0 then 1 else x * pow x (n-1) in pow 3 8 end" |> run;;
+val it : int = 6561
+```
 
 ## PLC 4.5
+
