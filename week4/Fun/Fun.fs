@@ -53,16 +53,14 @@ let rec eval (e : expr) (env : value env) : int =
       if b<>0 then eval e2 env
       else eval e3 env
 
-    | Letfun(f, xs, fBody, letBody) ->  // x -> xs
+    | Letfun(f, xs, fBody, letBody) ->
       let bodyEnv = (f, Closure(f, xs, fBody, env)) :: env 
       eval letBody bodyEnv
-    | Call(Var f, eArgs) ->  // eArg -> eArgs
+    | Call(Var f, eArgs) ->
       let fClosure = lookup env f
       match fClosure with
-      | Closure (f, xs, fBody, fDeclEnv) -> // x -> xs
-        // todo
+      | Closure (f, xs, fBody, fDeclEnv) ->
         let xVals = List.map (fun e -> Int(eval e env)) eArgs
-  
         let fBodyEnv = (List.zip xs xVals) @ ((f, fClosure) :: fDeclEnv)
 
         eval fBody fBodyEnv
