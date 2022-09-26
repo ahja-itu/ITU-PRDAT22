@@ -340,3 +340,61 @@ val it : int = 6561
 
 ## PLC 4.5
 
+
+Here is a diff of the changes that we've made to solve this exercise. We chose to have the `&&` and `||` .operators to have lower precedence than other logical operators to reflect the behavior of other programming languages.
+
+```diff
+diff --git a/week4/Fun/FunLex.fsl b/week4/Fun/FunLex.fsl
+index f3370a4..7a96812 100644
+--- a/week4/Fun/FunLex.fsl
++++ b/week4/Fun/FunLex.fsl
+@@ -53,6 +53,8 @@ rule Token = parse
+   | '*'             { TIMES }                     
+   | '/'             { DIV }                     
+   | '%'             { MOD }
++  | "&&"            { LAND }
++  | "||"            { LOR }
+   | '('             { LPAR }
+   | ')'             { RPAR }
+   | eof             { EOF }
+diff --git a/week4/Fun/FunPar.fsy b/week4/Fun/FunPar.fsy
+index a146b61..eff149c 100644
+--- a/week4/Fun/FunPar.fsy
++++ b/week4/Fun/FunPar.fsy
+@@ -14,11 +14,12 @@
+ 
+ %token ELSE END FALSE IF IN LET NOT THEN TRUE
+ %token PLUS MINUS TIMES DIV MOD
+-%token EQ NE GT LT GE LE
++%token EQ NE GT LT GE LE LAND LOR
+ %token LPAR RPAR 
+ %token EOF
+ 
+ %left ELSE              /* lowest precedence  */
++%left LAND LOR
+ %left EQ NE 
+ %left GT LT GE LE
+ %left PLUS MINUS
+@@ -52,6 +53,9 @@ Expr:
+   | Expr LT    Expr                     { Prim("<",  $1, $3)     }
+   | Expr GE    Expr                     { Prim(">=", $1, $3)     }
+   | Expr LE    Expr                     { Prim("<=", $1, $3)     }
++  | Expr LAND  Expr                     { If($1, $3, CstB false) }
++  | Expr LOR   Expr                     { If($1, CstB true, $3)  }
++  
+ ;
+```
+
+Here is some output from testing the implementation:
+
+```fsi
+> fromString "3 < 5 && (10 < 5 || 2 = 2)";;       
+val it : Absyn.expr =
+  If
+    (Prim ("<", CstI 3, CstI 5),
+     If (Prim ("<", CstI 10, CstI 5), CstB true, Prim ("=", CstI 2, CstI 2)),
+     CstB false)
+
+> run it;;
+val it : int = 1
+```
