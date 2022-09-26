@@ -194,6 +194,11 @@ index 7847151..8b19b97 100644
      | Call _ -> failwith "eval Call: not first-order function"
 @@ -71,28 +75,29 @@ let run e = eval e [];;
  
+```
+
+Apart from the above, we've also changed the example code as seen below:
+
+```diff
  (* Examples in abstract syntax *)
  
 -let ex1 = Letfun("f1", "x", Prim("+", Var "x", CstI 1), 
