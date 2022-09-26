@@ -277,18 +277,11 @@ diff --git a/week4/Fun/FunPar.fsy b/week4/Fun/FunPar.fsy
 index c0addbf..a146b61 100644
 --- a/week4/Fun/FunPar.fsy
 +++ b/week4/Fun/FunPar.fsy
-@@ -5,6 +5,7 @@
-   *)
- 
-  open Absyn;
-+ let unpack (Call(f, x)) b = Call(f, x @ [b]);
- %}
- 
- %token <int> CSTINT
 @@ -27,6 +28,7 @@
  %start Main
  %type <Absyn.expr> Main Expr AtExpr Const
  %type <Absyn.expr> AppExpr
++%type <Absyn.expr list> AtExprs
 +%type <string list> Names
  
  %%
@@ -303,18 +296,20 @@ index c0addbf..a146b61 100644
  ;
  
 +Names:
-+  NAME          { [$1] }
-+  | NAME Names    { $1 :: $2 }
++  NAME                                  { [$1] }
++  | NAME Names                          { $1 :: $2 }
 +;
 +
  AppExpr:
 -    AtExpr AtExpr                       { Call($1, $2)           }
 -  | AppExpr AtExpr                      { Call($1, $2)           }
-+    AtExpr AtExpr                       { Call($1, [$2])           }
-+  | AppExpr AtExpr                      { unpack $1 $2           }
++    AtExpr AtExprs                      { Call($1, $2) }
  ;
- 
- Const:
+
++AtExprs:
++    AtExpr AtExprs                      { $1 :: $2 }
++  | AtExpr                              { [$1] }
++;
 ```
 
 Here is an example output to verify that our solution works:

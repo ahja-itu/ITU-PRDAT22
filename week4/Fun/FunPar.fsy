@@ -5,7 +5,6 @@
   *)
 
  open Absyn;
- let unpack (Call(f, x)) b = Call(f, x @ [b]);
 %}
 
 %token <int> CSTINT
@@ -29,6 +28,7 @@
 %start Main
 %type <Absyn.expr> Main Expr AtExpr Const
 %type <Absyn.expr> AppExpr
+%type <Absyn.expr list> AtExprs
 %type <string list> Names
 
 %%
@@ -67,14 +67,19 @@ AtExpr:
 ;
 
 Names:
-  NAME          { [$1] }
-  | NAME Names    { $1 :: $2 }
+  NAME                                  { [$1] }
+  | NAME Names                          { $1 :: $2 }
 ;
 
 AppExpr:
-    AtExpr AtExpr                       { Call($1, [$2])           }
-  | AppExpr AtExpr                      { unpack $1 $2           }
+    AtExpr AtExprs                      { Call($1, $2) }
 ;
+
+AtExprs:
+    AtExpr AtExprs                      { $1 :: $2 }
+  | AtExpr                              { [$1] }
+;
+
 
 Const:
     CSTINT                              { CstI($1)               }
