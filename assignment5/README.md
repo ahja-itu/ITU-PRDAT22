@@ -72,3 +72,43 @@ $ csi
 > Console.WriteLine($"[{string.Join(", ", arr)}]");
 [2, 3, 3, 4, 5, 7, 12]
 ```
+
+### PLC 5.7
+
+The changes made to `TypeInference.fs` are shown below. We have not tested the changes, because the custom language doesn't support lists yet.
+
+```diff
+diff --git a/assignment5/Fun/TypeInference.fs b/assignment5/Fun/TypeInference.fs
+index 45e8e7f..9cfed38 100644
+--- a/assignment5/Fun/TypeInference.fs
++++ b/assignment5/Fun/TypeInference.fs
+@@ -53,6 +53,7 @@ type typ =
+      | TypB                                (* booleans                   *)
+      | TypF of typ * typ                   (* (argumenttype, resulttype) *)
+      | TypV of typevar                     (* type variable              *)
++     | TypL of typ                         (* list, element type is typ  *)
+ 
+ and tyvarkind =  
+      | NoLink of string                    (* uninstantiated type var.   *)
+@@ -147,6 +148,7 @@ let rec showType t : string =
+           | (NoLink name, _) -> name
+           | _                -> failwith "showType impossible"
+         | TypF(t1, t2) -> "(" + pr t1 + " -> " + pr t2 + ")"
++        | TypL(t1)     -> "[" + pr t1 + "]"
+     pr t 
+ 
+ let rec showTEnv tenv =
+@@ -178,6 +180,7 @@ let rec unify t1 t2 : unit =
+                                   else linkVarToType tv2 t1'
+     | (TypV tv1, _       ) -> linkVarToType tv1 t2'
+     | (_,        TypV tv2) -> linkVarToType tv2 t1'
++    | (TypL t1, TypL t2) -> unify t1 t2
+     | (TypI,     t) -> failwith ("type error: int and " + typeToString t)
+     | (TypB,     t) -> failwith ("type error: bool and " + typeToString t)
+     | (TypF _,   t) -> failwith ("type error: function and " + typeToString t)
+@@ -223,6 +226,7 @@ let rec copyType subst t : typ =
+     | TypF(t1,t2) -> TypF(copyType subst t1, copyType subst t2)
+     | TypI        -> TypI
+     | TypB        -> TypB
++    | TypL(t1)    -> TypL(copyType subst t1)
+```
