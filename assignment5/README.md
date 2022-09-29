@@ -114,3 +114,43 @@ index 45e8e7f..9cfed38 100644
      | TypB        -> TypB
 +    | TypL(t1)    -> TypL(copyType subst t1)
 ```
+
+### PLC 6.1
+
+```fs
+> open ParseAndRunHigher;;
+
+> run (fromString @"let add x = let f y = x+y in f end
+-                   in add 2 5 end");;
+val it : HigherFun.value = Int 7
+
+> run (fromString @"let add x = let f y = x+y in f end
+- in let addtwo = add 2
+-    in addtwo 5 end
+- end");;
+val it : HigherFun.value = Int 7
+
+> run (fromString @"let add x = let f y = x+y in f end
+- in let addtwo = add 2
+-    in let x = 77 in addtwo 5 end
+- end end");;
+val it : HigherFun.value = Int 7
+```
+
+The result above is as expected because the language is statically scoped, so `f` will use the `x` from `let add x`, which means the `x` from `let x = 77` is never used.
+If the language had been dynamically scoped, `x` would have been overwritten.
+
+```fs
+> run (fromString @"let add x = let f y = x+y in f end
+- in add 2 end");;
+val it : HigherFun.value =
+  Closure
+    ("f", "y", Prim ("+", Var "x", Var "y"),
+     [("x", Int 2);
+      ("add",
+       Closure
+         ("add", "x", Letfun ("f", "y", Prim ("+", Var "x", Var "y"), Var "f"),
+          []))])
+```
+
+The result above shows partial application of a function. The return value of `add x` is a function that adds `2` to the given argument.
