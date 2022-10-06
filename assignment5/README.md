@@ -154,3 +154,123 @@ val it : HigherFun.value =
 ```
 
 The result above shows partial application of a function. The return value of `add x` is a function that adds `2` to the given argument.
+
+### PLC 6.2
+
+The changes are showcased via this git diff:
+
+```diff
+diff --git a/assignment5/Fun/Absyn.fs b/assignment5/Fun/Absyn.fs
+index b0dfc3f..8194c9a 100644
+--- a/assignment5/Fun/Absyn.fs
++++ b/assignment5/Fun/Absyn.fs
+@@ -11,3 +11,4 @@ type expr =
+   | If of expr * expr * expr
+   | Letfun of string * string * expr * expr    (* (f, x, fBody, letBody) *)
+   | Call of expr * expr
++  | Fun of string * expr
+diff --git a/assignment5/Fun/HigherFun.fs b/assignment5/Fun/HigherFun.fs
+--- a/assignment5/Fun/HigherFun.fs
++++ b/assignment5/Fun/HigherFun.fs
+@@ -30,6 +30,7 @@ let rec lookup env x =
+ type value = 
+   | Int of int
+   | Closure of string * string * expr * value env       (* (f, x, fBody, fDeclEnv) *)
++  | Clos of string * expr * value env
+ 
+ let rec eval (e : expr) (env : value env) : value =
+     match e with
+@@ -65,7 +66,9 @@ let rec eval (e : expr) (env : value env) : value =
+         let xVal = eval eArg env
+         let fBodyEnv = (x, xVal) :: (f, fClosure) :: fDeclEnv
+         in eval fBody fBodyEnv
+-      | _ -> failwith "eval Call: not a function";;
++      | _ -> failwith "eval Call: not a function"
++    | Fun(x, body) ->
++        Clos(x, body, env)
+```
+
+We test that the abstract syntax can be evaluated in the next exercise.
+
+### PLC 6.3
+
+The changes are showcased via this git diff:
+
+```diff
+diff --git a/assignment5/Fun/FunLex.fsl b/assignment5/Fun/FunLex.fsl
+index f65ce27..775d9b0 100644
+--- a/assignment5/Fun/FunLex.fsl
++++ b/assignment5/Fun/FunLex.fsl
+@@ -30,6 +30,7 @@ let keyword s =
+     | "not"   -> NOT
+     | "then"  -> THEN
+     | "true"  -> CSTBOOL true
++    | "fun"   -> FUN
+     | _       -> NAME s
+ }
+ 
+@@ -48,6 +49,7 @@ rule Token = parse
+   | '<'             { LT }
+   | ">="            { GE }
+   | "<="            { LE }
++  | "->"            { RARROW }
+   | '+'             { PLUS }                     
+   | '-'             { MINUS }                     
+   | '*'             { TIMES }                     
+--- a/assignment5/Fun/FunPar.fsy
++++ b/assignment5/Fun/FunPar.fsy
+@@ -11,13 +11,15 @@
+ %token <string> NAME
+ %token <bool> CSTBOOL
+ 
+-%token ELSE END FALSE IF IN LET NOT THEN TRUE
++%token ELSE END FALSE IF IN LET NOT THEN TRUE FUN
++%token RARROW
+ %token PLUS MINUS TIMES DIV MOD
+ %token EQ NE GT LT GE LE
+ %token LPAR RPAR 
+ %token EOF
+ 
+ %left ELSE              /* lowest precedence  */
++%left RARROW
+ %left EQ NE 
+ %left GT LT GE LE
+ %left PLUS MINUS
+@@ -38,6 +40,7 @@ Expr:
+     AtExpr                              { $1                     }
+   | AppExpr                             { $1                     }
+   | IF Expr THEN Expr ELSE Expr         { If($2, $4, $6)         }
++  | FUN NAME RARROW Expr                { Fun($2, $4)            }
+   | MINUS Expr                          { Prim("-", CstI 0, $2)  }
+   | Expr PLUS  Expr                     { Prim("+",  $1, $3)     }
+   | Expr MINUS Expr                     { Prim("-",  $1, $3)     }
+```
+
+In order to avoid an ambiguous language, we have to explicitly define precedence on the new `->` token. Otherwise, both of the follow would be a valid parse result for `fun x -> 2 * x`:
+
+- `(fun x -> 2) * x`
+- `fun x -> (2 * x)` (we want this one)
+
+Therefore, we have defined the `->` token as left associative with lower precedence than all the logical and arithmetic operators.
+
+```fsi
+$ ~/bin/fsharp/fslex --unicode FunLex.fsl
+...
+$ ~/bin/fsharp/fsyacc --module FunPar FunPar.fsy
+...
+$ fsharpi -r /root/.local/bin/fsharp/FsLexYacc.Runtime.dll Absyn.fs HigherFun.fs FunPar.fs FunLex.fs Parse.fs ParseAndRunHigher.fs
+...
+> fromString "fun x -> 2 * x";;    
+val it : Absyn.expr = Fun ("x", Prim ("*", CstI 2, Var "x"))
+
+> run it;;
+val it : HigherFun.value = Clos ("x", Prim ("*", CstI 2, Var "x"), [])
+
+> fromString "let y = 22 in fun z -> z + y end";;
+val it : Absyn.expr =
+  Let ("y", CstI 22, Fun ("z", Prim ("+", Var "z", Var "y")))
+
+> run it;;
+val it : HigherFun.value =
+  Clos ("z", Prim ("+", Var "z", Var "y"), [("y", Int 22)])
+```
