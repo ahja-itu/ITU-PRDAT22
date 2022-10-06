@@ -19,11 +19,11 @@
 %token EOF
 
 %left ELSE              /* lowest precedence  */
+%left RARROW
 %left EQ NE 
 %left GT LT GE LE
 %left PLUS MINUS
 %left TIMES DIV MOD 
-%left RARROW
 %nonassoc NOT           /* highest precedence  */
 
 %start Main
