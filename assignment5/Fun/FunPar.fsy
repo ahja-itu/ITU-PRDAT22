@@ -19,11 +19,11 @@
 %token EOF
 
 %left ELSE              /* lowest precedence  */
-%left RARROW FUN
 %left EQ NE 
 %left GT LT GE LE
 %left PLUS MINUS
 %left TIMES DIV MOD 
+%left RARROW
 %nonassoc NOT           /* highest precedence  */
 
 %start Main
@@ -40,6 +40,7 @@ Expr:
     AtExpr                              { $1                     }
   | AppExpr                             { $1                     }
   | IF Expr THEN Expr ELSE Expr         { If($2, $4, $6)         }
+  | FUN NAME RARROW Expr                { Fun($2, $4)            }
   | MINUS Expr                          { Prim("-", CstI 0, $2)  }
   | Expr PLUS  Expr                     { Prim("+",  $1, $3)     }
   | Expr MINUS Expr                     { Prim("-",  $1, $3)     }
@@ -59,7 +60,6 @@ AtExpr:
   | NAME                                { Var $1                 }
   | LET NAME EQ Expr IN Expr END        { Let($2, $4, $6)        }
   | LET NAME NAME EQ Expr IN Expr END   { Letfun($2, $3, $5, $7) }
-  | FUN NAME RARROW Expr                { Fun($2, $4)            }
   | LPAR Expr RPAR                      { $2                     }
 ;
 

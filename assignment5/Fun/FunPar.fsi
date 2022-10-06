@@ -15,6 +15,7 @@ type token =
   | TIMES
   | DIV
   | MOD
+  | RARROW
   | ELSE
   | END
   | FALSE
@@ -24,6 +25,7 @@ type token =
   | NOT
   | THEN
   | TRUE
+  | FUN
   | CSTBOOL of (bool)
   | NAME of (string)
   | CSTINT of (int)
@@ -42,6 +44,7 @@ type tokenId =
     | TOKEN_TIMES
     | TOKEN_DIV
     | TOKEN_MOD
+    | TOKEN_RARROW
     | TOKEN_ELSE
     | TOKEN_END
     | TOKEN_FALSE
@@ -51,6 +54,7 @@ type tokenId =
     | TOKEN_NOT
     | TOKEN_THEN
     | TOKEN_TRUE
+    | TOKEN_FUN
     | TOKEN_CSTBOOL
     | TOKEN_NAME
     | TOKEN_CSTINT
