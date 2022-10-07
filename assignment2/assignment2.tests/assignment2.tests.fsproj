@@ -21,6 +21,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\week2\week2.fsproj" />
+    <ProjectReference Include="..\assignment2\assignment2.fsproj" />
   </ItemGroup>
 </Project>
