@@ -17,10 +17,10 @@ You can find our code by searching for `Exercise 3.7` comments, which should rev
 Alternatively, see the git diff here:
 
 ```diff
-diff --git a/week3/week3/Expr/Absyn.fs b/week3/week3/Expr/Absyn.fs
+diff --git a/assignment3/assignment3/Expr/Absyn.fs b/assignment3/assignment3/Expr/Absyn.fs
 index d734237..7f55508 100644
---- a/week3/week3/Expr/Absyn.fs
-+++ b/week3/week3/Expr/Absyn.fs
+--- a/assignment3/assignment3/Expr/Absyn.fs
++++ b/assignment3/assignment3/Expr/Absyn.fs
 @@ -9,3 +9,6 @@ type expr =
    | Var of string
    | Let of string * expr * expr
@@ -28,10 +28,10 @@ index d734237..7f55508 100644
 +  (* Exercise 3.7 - start block *)
 +  | If of expr * expr * expr
 +  (* Exercise 3.7 - end block *)
-diff --git a/week3/week3/Expr/ExprLex.fsl b/week3/week3/Expr/ExprLex.fsl
+diff --git a/assignment3/assignment3/Expr/ExprLex.fsl b/assignment3/assignment3/Expr/ExprLex.fsl
 index 5d62327..2d0f197 100644
---- a/week3/week3/Expr/ExprLex.fsl
-+++ b/week3/week3/Expr/ExprLex.fsl
+--- a/assignment3/assignment3/Expr/ExprLex.fsl
++++ b/assignment3/assignment3/Expr/ExprLex.fsl
 @@ -19,6 +19,11 @@ let keyword s =
      | "let" -> LET
      | "in"  -> IN
@@ -44,10 +44,10 @@ index 5d62327..2d0f197 100644
      | _     -> NAME s
  }
  
-diff --git a/week3/week3/Expr/ExprPar.fsy b/week3/week3/Expr/ExprPar.fsy
+diff --git a/assignment3/assignment3/Expr/ExprPar.fsy b/assignment3/assignment3/Expr/ExprPar.fsy
 index cea96c5..c2ba827 100644
---- a/week3/week3/Expr/ExprPar.fsy
-+++ b/week3/week3/Expr/ExprPar.fsy
+--- a/assignment3/assignment3/Expr/ExprPar.fsy
++++ b/assignment3/assignment3/Expr/ExprPar.fsy
 @@ -9,10 +9,16 @@
  %token <int> CSTINT
  %token <string> NAME
