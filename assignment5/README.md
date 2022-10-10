@@ -289,3 +289,192 @@ The reason for `f` being polymorphic in the let-body, we cannot derive a specifi
 The reason why `f` should not be polymorphic in the `f` let-body is due to the `+` operator limits the polymorphic types that `f` can assume. Also, `x` needs to be an integer to match the return type of the first branch of the if expression.
 
 ![type derivation tree for PLC 6.4.2](PLC%206.4.2.png)
+
+
+### PLC 6.5
+
+
+#### PLC 6.5.1
+
+```fsi
+> fromString "let f x = 1 in f f end" |> inferType;;
+val it : string = "int"
+```
+
+```fsi
+> fromString "let f g = g g in f end" |> inferType;;
+System.Exception: type error: circularity (...)
+```
+
+Inferring the types from the above program doesn't work as the type definition of `g g` in the let body is infinitely recursive.
+
+
+```fsi
+> fromString "let f x = let g y = y in g false end in f 42 end" |> inferType;;
+val it : string = "bool"
+```
+
+```fsi
+> fromString "let f x = let g y = if true then y else x in g false end in f 42 end" |> inferType;;
+System.Exception: type error: bool and int
+```
+
+This type inference explodes as the two branches of the if statement doesn't return the same types (`int <> bool`)
+
+```fsi
+> fromString "let f x = let g y = if true then y else x in g false end in f true end" |> inferType;;
+val it : string = "bool"
+```
+
+#### PLC 6.5.2
+
+
+
+##### 1
+The program:
+
+```sml
+let f x = if x then true else false in f end
+```
+
+Produces type inference:
+
+```fsi
+> "let f x = if x then true else false in f end";;
+val it : string = "let f x = if x then true else false in f end"
+
+> fromString it |> inferType;;
+val it : string = "(bool -> bool)"
+```
+
+##### 2
+
+The program:
+
+```sml
+let f x = x + 1 in f end
+```
+
+produces type inference:
+
+```fsi
+> "let f x = x + 1 in f end";;
+val it : string = "let f x = x + 1 in f end"
+
+> fromString it |> inferType;;
+val it : string = "(int -> int)"
+```
+
+##### 3
+
+The program
+
+```sml
+let f x = 
+    let g y = x + y 
+    in g end 
+in f end
+```
+
+produces the type inference:
+
+```fsi
+> "let f x = let g y = x + y in g end in f end";;
+val it : string = "let f x = let g y = x + y in g end in f end"
+
+> fromString it |> inferType;;                   
+val it : string = "(int -> (int -> int))"
+```
+
+##### 4
+
+
+The program
+
+```sml
+let f x = 
+    let g y = x 
+    in g end 
+in f end
+```
+
+produces the type inference
+
+```fsi
+> "let f x = let g y = x in g end in f end";;                     
+val it : string = "let f x = let g y = x in g end in f end"
+
+> fromString it |> inferType;;               
+val it : string = "('h -> ('g -> 'h))"
+```
+
+
+##### 5
+
+The program
+
+```sml
+let f x = 
+    let g y = y 
+    in g end 
+in f end
+```
+
+produces the type inference
+
+```fsi
+> "let f x = let g y = y in g end in f end";;
+val it : string = "let f x = let g y = y in g end in f end"
+
+> fromString it |> inferType;;               
+val it : string = "('g -> ('h -> 'h))"
+```
+
+
+###### 6
+
+The program
+
+```sml
+let f x = 
+    let g y = 
+        let h z = y (x z) 
+        in h end 
+    in g end 
+in f end
+```
+
+produces the type inference
+
+
+```fsi
+> "let f x = let g y = let h z = y (x z) in h end in g end in f end";;
+val it : string =
+  "let f x = let g y = let h z = y (x z) in h end in g end in f end"
+
+> fromString it |> inferType;;                                        
+val it : string = "(('l -> 'k) -> (('k -> 'm) -> ('l -> 'm)))"
+```
+
+
+###### 7
+
+
+The (infinitely recursive) program
+```sml
+let f x = f x in f end
+```
+
+produces the type inference
+
+```fsi
+> "let f x = f x in f end";;
+val it : string = "let f x = f x in f end"
+
+> fromString it |> inferType;;                   
+val it : string = "('e -> 'f)"
+```
+
+###### 8
+
+We skipped this.
