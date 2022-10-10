@@ -274,3 +274,18 @@ val it : Absyn.expr =
 val it : HigherFun.value =
   Clos ("z", Prim ("+", Var "z", Var "y"), [("y", Int 22)])
 ```
+
+
+### PLC 6.4
+
+#### PLC 6.4.1
+
+The reason for `f` being polymorphic in the let-body, we cannot derive a specific type for `x`, therefore can be any type.
+
+[![type derivation tree for PLC 6.4.1](PLC%206.4.1.png)](PLC%206.4.1.png)
+
+#### PLC 6.4.2
+
+The reason why `f` should not be polymorphic in the `f` let-body is due to the `+` operator limits the polymorphic types that `f` can assume. Also, `x` needs to be an integer to match the return type of the first branch of the if expression.
+
+[![type derivation tree for PLC 6.4.2](PLC%206.4.2.png)](PLC%206.4.2.png)
