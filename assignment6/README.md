@@ -118,3 +118,51 @@ val it : Interp.store =
 ```
 
 The middle execution with the input `5` shows how wildly unsafe Micro-C is since we can easily just read the memory outside array bounds. In this case it also reads the address of the array.
+
+#### ii
+
+The Micro-C program:
+
+```c
+void squares(int n, int arr[]) {
+  int i;
+  i = 0;
+
+  while (i < n) {
+    arr[i] = i * i;
+    print arr[i];
+    i = i + 1;
+  }
+}
+
+void main(int n) {
+  int arr[20];
+
+  squares(n, arr);
+
+  println;
+}
+```
+
+And the result of running it:
+
+```fsi
+> run (fromFile "../ex_7_2_ii.cnotc") [4];;
+0 1 4 9
+val it : Interp.store =
+  map
+    [(0, 4); (1, 0); (2, 1); (3, 4); (4, 9); (5, -999); (6, -999); (7, -999);
+     (8, -999); ...]
+
+> run (fromFile "../ex_7_2_ii.cnotc") [21];;
+0 1 4 9 16 25 36 49 64 81 100 121 144 169 196 225 256 289 324 361 400
+val it : Interp.store =
+  map
+    [(0, 21); (1, 0); (2, 1); (3, 4); (4, 9); (5, 16); (6, 25); (7, 36);
+     (8, 49); ...]
+
+> run (fromFile "../ex_7_2_ii.cnotc") [25];;
+0 1 4 9 16 25 36 49 64 81 100 121 144 169 196 225 256 289 324 361 400 441 System.Collections.Generic.KeyNotFoundException: The given key was not present in the dictionary.
+```
+
+The first run shows a perfectly fine result. The second run shows that we can write outside the array. The third run shows the same but with a boom boom as a result of our bad behaviour.
