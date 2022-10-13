@@ -234,9 +234,68 @@ The first run is perfectly normal and counts correctly. The second run, however,
 
 ### PLC 7.3
 
-diff here...
+We have changed the lexer and parser as follows ("aliasing" a for loop as a while loop):
 
-Test program:
+```diff
+diff --git a/assignment6/MicroC/CLex.fsl b/assignment6/MicroC/CLex.fsl
+index 13d2450..69d24db 100644
+--- a/assignment6/MicroC/CLex.fsl
++++ b/assignment6/MicroC/CLex.fsl
+@@ -28,6 +28,7 @@ let keyword s =
+     | "true"    -> CSTBOOL 1
+     | "void"    -> VOID 
+     | "while"   -> WHILE         
++    | "for"     -> FOR
+     | _         -> NAME s
+  
+ let cEscape s = 
+diff --git a/assignment6/MicroC/CPar.fsy b/assignment6/MicroC/CPar.fsy
+index a1b2075..05c8660 100644
+--- a/assignment6/MicroC/CPar.fsy
++++ b/assignment6/MicroC/CPar.fsy
+@@ -14,7 +14,7 @@ let nl = CstI 10
+ %token <int> CSTINT CSTBOOL
+ %token <string> CSTSTRING NAME
+ 
+-%token CHAR ELSE IF INT NULL PRINT PRINTLN RETURN VOID WHILE
++%token CHAR ELSE IF INT NULL PRINT PRINTLN RETURN VOID WHILE FOR
+ %token PLUS MINUS TIMES DIV MOD
+ %token EQ NE GT LT GE LE
+ %token NOT SEQOR SEQAND
+@@ -100,12 +100,30 @@ StmtM:  /* No unbalanced if-else */
+   | Block                               { $1                   }
+   | IF LPAR Expr RPAR StmtM ELSE StmtM  { If($3, $5, $7)       }
+   | WHILE LPAR Expr RPAR StmtM          { While($3, $5)        }
++  | FOR LPAR Expr SEMI Expr SEMI Expr RPAR StmtM {
++    Block [
++      Stmt (Expr $3);
++      Stmt (While($5, Block [
++        Stmt $9;
++        Stmt (Expr $7)
++      ]))
++    ]
++  }
+ ;
+ 
+ StmtU:
+     IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }
+   | IF LPAR Expr RPAR Stmt              { If($3, $5, Block []) }
+   | WHILE LPAR Expr RPAR StmtU          { While($3, $5)        }
++  | FOR LPAR Expr SEMI Expr SEMI Expr RPAR StmtU {
++    Block [
++      Stmt (Expr $3);
++      Stmt (While($5, Block [
++        Stmt $9;
++        Stmt (Expr $7)
++      ]))
++    ]
++  }
+ ;
+ 
+ Expr: 
+```
+
+One test program:
 
 ```c
 void main(int n) {
