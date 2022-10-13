@@ -317,7 +317,6 @@ $ make run
 ```
 
 Another test program:
-
 ```c
 void main(int n) {
   int i;
@@ -336,3 +335,96 @@ With the output:
 2 4 8 16 32 64
 ```
 
+#### Rewrites of 7.2 assignments
+
+We tested and ensured that these programs calculate the same results as their original counterpart, but have omitted submitting the output from the terminal.
+
+##### i
+
+```c
+void arrsum(int n, int arr[], int *sump) {
+  int i;
+  int sum;
+  sum = 0;
+
+  for (i = 0; i < n; i = i + 1) {
+    sum = sum + arr[i];
+  }
+
+  *sump = sum;
+}
+
+void main(int n) {
+  int arr[4];
+  arr[0] = 7;
+  arr[1] = 13;
+  arr[2] = 9;
+  arr[3] = 8;
+
+  int *sump;
+
+  arrsum(n, arr, sump);
+
+  print *sump;
+  println;
+}
+```
+
+
+##### ii
+
+```c
+void squares(int n, int arr[]) {
+  int i;
+
+  for (i = 0; i < n; i = i + 1) {
+    arr[i] = i * i;
+    print arr[i];
+  }
+}
+
+void main(int n) {
+  int arr[20];
+
+  squares(n, arr);
+
+  println;
+}
+```
+
+##### iii
+
+```c
+void histogram(int n, int ns[], int max, int freq[]) {
+  int i;
+
+  for (i = 0; i < max; i = i + 1) {
+    freq[i] = 0;
+  }
+  for (i = 0; i < n; i = i + 1) {
+    freq[ns[i]] = freq[ns[i]] + 1;
+  }
+}
+
+void main(int n) {
+  int ns[7];
+  ns[0] = 7;
+  ns[1] = 13;
+  ns[2] = 9;
+  ns[3] = 8;
+  ns[4] = 7;
+  ns[5] = 9;
+  ns[6] = 9;
+
+  int freq[20];
+  histogram(n, ns, 20, freq);
+
+  int i;
+  
+  for (i = 0; i < 20; i = i + 1) {
+    print freq[i];
+  }
+
+  println;
+}
+```
