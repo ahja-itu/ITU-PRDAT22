@@ -55,3 +55,66 @@ val it : Interp.store =
     [(0, 5); (1, 0); (2, 6); (3, -999); (4, 0); (5, 0); (6, 0); (7, 0); (8, 0);
      ...]
 ```
+
+### PLC 7.2
+
+### i
+
+The Micro-C program itself:
+
+```c
+void arrsum(int n, int arr[], int *sump) {
+  int i;
+  i = 0;
+  int sum;
+  sum = 0;
+
+  while (i < n) {
+    sum = sum + arr[i];
+    i = i + 1;
+  }
+
+  *sump = sum;
+}
+
+void main(int n) {
+  int arr[4];
+  arr[0] = 7;
+  arr[1] = 13;
+  arr[2] = 9;
+  arr[3] = 8;
+
+  int *sump;
+
+  arrsum(n, arr, sump);
+
+  print *sump;
+  println;
+}
+```
+
+Executing the program:
+
+```fsi
+> run (fromFile "../ex_7_2_i.c") [2];;
+20 val it : Interp.store =
+  map
+    [(-1, 20); (0, 2); (1, 7); (2, 13); (3, 9); (4, 8); (5, 1); (6, -1);
+     (7, 2); ...]
+
+> run (fromFile "../ex_7_2_i.c") [5];;
+38
+val it : Interp.store =
+  map
+    [(-1, 38); (0, 5); (1, 7); (2, 13); (3, 9); (4, 8); (5, 1); (6, -1);
+     (7, 5); ...]
+
+> run (fromFile "../ex_7_2_i.c") [4];;
+37
+val it : Interp.store =
+  map
+    [(-1, 37); (0, 4); (1, 7); (2, 13); (3, 9); (4, 8); (5, 1); (6, -1);
+     (7, 4); ...]
+```
+
+The middle execution with the input `5` shows how wildly unsafe Micro-C is since we can easily just read the memory outside array bounds. In this case it also reads the address of the array.
