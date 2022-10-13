@@ -166,3 +166,68 @@ val it : Interp.store =
 ```
 
 The first run shows a perfectly fine result. The second run shows that we can write outside the array. The third run shows the same but with a boom boom as a result of our bad behaviour.
+
+#### iii
+
+The program:
+
+```c
+void histogram(int n, int ns[], int max, int freq[]) {
+  int i;
+  i = 0;
+
+  while (i < max) {
+    freq[i] = 0;
+    i = i + 1;
+  }
+
+  i = 0;
+  while (i < n) {
+    freq[ns[i]] = freq[ns[i]] + 1;
+    i = i + 1;
+  }
+}
+
+void main(int n) {
+  int ns[7];
+  ns[0] = 7;
+  ns[1] = 13;
+  ns[2] = 9;
+  ns[3] = 8;
+  ns[4] = 7;
+  ns[5] = 9;
+  ns[6] = 9;
+
+  int freq[20];
+  histogram(n, ns, 20, freq);
+
+  int i;
+  i = 0;
+  while (i < 20) {
+    print freq[i];
+    i = i + 1;
+  }
+
+  println;
+}
+```
+
+And here we run the program:
+
+```fsi
+> run (fromFile "../ex_7_2_iii.cnotc") [7];;
+0 0 0 0 0 0 0 2 1 3 0 0 0 1 0 0 0 0 0 0
+val it : Interp.store =
+  map
+    [(0, 7); (1, 7); (2, 13); (3, 9); (4, 8); (5, 7); (6, 9); (7, 9); (8, 1);
+     ...]
+
+> run (fromFile "../ex_7_2_iii.cnotc") [10];;
+1 2 0 0 0 0 0 2 1 3 0 0 0 1 0 0 0 0 0 0
+val it : Interp.store =
+  map
+    [(0, 10); (1, 7); (2, 13); (3, 9); (4, 8); (5, 7); (6, 9); (7, 9); (8, 1);
+     ...]
+```
+
+The first run is perfectly normal and counts correctly. The second run, however, reads outside of array bounds and counts those numbers too - some very undefined behaviour / buffer overflow.
