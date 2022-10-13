@@ -231,3 +231,49 @@ val it : Interp.store =
 ```
 
 The first run is perfectly normal and counts correctly. The second run, however, reads outside of array bounds and counts those numbers too - some very undefined behaviour / buffer overflow.
+
+### PLC 7.3
+
+diff here...
+
+Test program:
+
+```c
+void main(int n) {
+  int i;
+  for (i = 0; i < n; i = i + 1)
+    print i;
+  println;
+}
+```
+
+Running the above:
+
+```fsi
+$ make run
+...
+
+> run (fromFile "../ex_7_3_test1.cnotc") [10];;
+0 1 2 3 4 5 6 7 8 9
+```
+
+Another test program:
+
+```c
+void main(int n) {
+  int i;
+  for (i = 1; i < n; i) {
+    i = i + i;
+    print i;
+  }
+  println;
+}
+```
+
+With the output:
+
+```fsi
+> run (fromFile "../ex_7_3_test2.cnotc") [50];;
+2 4 8 16 32 64
+```
+
