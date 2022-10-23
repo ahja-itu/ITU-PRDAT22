@@ -428,3 +428,144 @@ void main(int n) {
   println;
 }
 ```
+
+### PLC 7.4
+
+Here are the changes we have made to support the inner workings of the two new operators:
+
+```diff
+diff --git a/assignment6/MicroC/Absyn.fs b/assignment6/MicroC/Absyn.fs
+index da8f60c..fd965be 100644
+--- a/assignment6/MicroC/Absyn.fs
++++ b/assignment6/MicroC/Absyn.fs
+@@ -16,6 +16,8 @@ type typ =
+ and expr =                                                         
+   | Access of access                 (* x    or  *p    or  a[e]     *)
+   | Assign of access * expr          (* x=e  or  *p=e  or  a[e]=e   *)
++  | PreInc of access                 (* ++x                         *)
++  | PreDec of access                 (* --x                         *)
+   | Addr of access                   (* &x   or  &*p   or  &a[e]    *)
+   | CstI of int                      (* Constant                    *)
+   | Prim1 of string * expr           (* Unary primitive operator    *)
+diff --git a/assignment6/MicroC/Interp.fs b/assignment6/MicroC/Interp.fs
+index 940bb9a..6d28e58 100644
+--- a/assignment6/MicroC/Interp.fs
++++ b/assignment6/MicroC/Interp.fs
+@@ -158,6 +158,12 @@ and eval e locEnv gloEnv store : int * store =
+     | Assign(acc, e) -> let (loc, store1) = access acc locEnv gloEnv store
+                         let (res, store2) = eval e locEnv gloEnv store1
+                         (res, setSto store2 loc res) 
++    | PreInc acc     -> let (loc, store1) = access acc locEnv gloEnv store
++                        let res = (getSto store1 loc) + 1
++                        (res, setSto store1 loc res)
++    | PreDec acc     -> let (loc, store1) = access acc locEnv gloEnv store
++                        let res = (getSto store1 loc) - 1
++                        (res, setSto store1 loc res)
+     | CstI i         -> (i, store)
+     | Addr acc       -> access acc locEnv gloEnv store
+     | Prim1(ope, e1) ->
+```
+
+We will test that this works when we have extended the parser in the next section.
+
+### PLC 7.5
+
+Here are the changes we have made to the lexer and parser to support the two new operators:
+
+```diff
+diff --git a/assignment6/MicroC/CLex.fsl b/assignment6/MicroC/CLex.fsl
+index 69d24db..2b30cc4 100644
+--- a/assignment6/MicroC/CLex.fsl
++++ b/assignment6/MicroC/CLex.fsl
+@@ -53,6 +53,8 @@ rule Token = parse
+                     { keyword (lexemeAsString lexbuf) }
+   | '+'             { PLUS } 
+   | '-'             { MINUS } 
++  | "++"            { INC }
++  | "--"            { DEC }
+   | '*'             { TIMES } 
+   | '/'             { DIV } 
+   | '%'             { MOD }                     
+diff --git a/assignment6/MicroC/CPar.fsy b/assignment6/MicroC/CPar.fsy
+index 05c8660..3e7da48 100644
+--- a/assignment6/MicroC/CPar.fsy
++++ b/assignment6/MicroC/CPar.fsy
+@@ -18,7 +18,7 @@ let nl = CstI 10
+ %token PLUS MINUS TIMES DIV MOD
+ %token EQ NE GT LT GE LE
+ %token NOT SEQOR SEQAND
+-%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP
++%token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP INC DEC
+ %token EOF
+ 
+ %right ASSIGN             /* lowest precedence */
+@@ -29,6 +29,7 @@ let nl = CstI 10
+ %left GT LT GE LE
+ %left PLUS MINUS
+ %left TIMES DIV MOD 
++%right INC DEC
+ %nonassoc NOT AMP 
+ %nonassoc LBRACK          /* highest precedence  */
+ 
+@@ -134,6 +135,8 @@ Expr:
+ ExprNotAccess:
+     AtExprNotAccess                     { $1                  }
+   | Access ASSIGN Expr                  { Assign($1, $3)      }
++  | INC Access                  				{ PreInc($2)          }
++  | DEC Access                  				{ PreDec($2)          }
+   | NAME LPAR Exprs RPAR                { Call($1, $3)        }  
+   | NOT Expr                            { Prim1("!", $2)      }
+   | PRINT Expr                          { Prim1("printi", $2) }
+
+```
+
+Here are some tests to demonstrate the the parser and operators work:
+
+```c
+void main(int n) {
+  // Simple loop with ++
+  int i;
+  for (i = 0; i < n; ++i)
+    print i;
+  println;
+
+  // Simple loop with --
+  i = 0;
+  for (i = n; i >= 0; --i)
+    print i;
+  println;
+
+  // Test that ++ and -- modify and return the result
+  int x;
+  int y;
+  x = 0;
+  y = 0;
+  while (x < n || y > (0 - n)) {
+    print ++x;
+    print --y;
+  }
+  println;
+
+  // Test that it doesn't mess with + and -
+  int v;
+  v = 3;
+  print (5 + ++v);
+  print v;
+  println;
+  v = 3;
+  print (5 - --v);
+  print v;
+  println;
+}
+```
+
+```fsi
+> run (fromFile "../ex_7_4_test1.cnotc") [3];;
+0 1 2
+3 2 1 0
+1 -1 2 -2 3 -3
+9 4
+3 2
+val it : Interp.store = map [(0, 3); (1, -1); (2, 3); (3, -3); (4, 2)]
+```
+
