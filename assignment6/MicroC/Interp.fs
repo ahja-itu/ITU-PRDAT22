@@ -158,6 +158,12 @@ and eval e locEnv gloEnv store : int * store =
     | Assign(acc, e) -> let (loc, store1) = access acc locEnv gloEnv store
                         let (res, store2) = eval e locEnv gloEnv store1
                         (res, setSto store2 loc res) 
+    | PreInc acc     -> let (loc, store1) = access acc locEnv gloEnv store
+                        let res = (getSto store1 loc) + 1
+                        (res, setSto store1 loc res)
+    | PreDec acc     -> let (loc, store1) = access acc locEnv gloEnv store
+                        let res = (getSto store1 loc) - 1
+                        (res, setSto store1 loc res)
     | CstI i         -> (i, store)
     | Addr acc       -> access acc locEnv gloEnv store
     | Prim1(ope, e1) ->
