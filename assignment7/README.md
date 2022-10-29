@@ -231,17 +231,22 @@ Label "L3";
 
 
 Bytecode for `prog1`:
+
+```txt
 0 20000000 16 7 0 1 2 9 18 4 25
+```
 
 As labels, with program code locations:
 
+```fs
 [CSTI 20_000_000;
 GOTO 7; 
-CSTI 1; // PC=4
+CSTI 1;       // PC=4
 SUB;
 DUP;
-IFNZERO 4; // PC=7
+IFNZERO 4;    // PC=7
 STOP]
+```
 
 
 Immediately from the bytecode, we see that there is a difference in size.
