@@ -516,7 +516,7 @@ $ java Machinetrace ex8.6.out 2
 20 [ 4 -999 2 2 20 ]{43: INCSP -1}
 [ 4 -999 2 2 ]{45: INCSP 0}
 [ 4 -999 2 2 ]{47: GOTO 58}
-[ 4 -999 2 2 ]{58: INCSP -1}        # Here*
+[ 4 -999 2 2 ]{58: INCSP -1}        # <--- we refer to here
 [ 4 -999 2 ]{60: CSTI 10}
 [ 4 -999 2 10 ]{62: PRINTC}
 
@@ -532,4 +532,4 @@ $ java Machine ex8.6.out 2
 Ran 0.019 seconds
 ```
 
-*Here: 
+One noteworthy issue we encountered is that we need to clean up after ourselves if we allocate things on the stack. Initially, we had our last instruction as `Label endLabel`, but since we copy the value of `n` onto the stack, it would remain on the stack after our switch case, completely breaking the return statement. Thus we had to add `INCSP -1` at the end to decrement the stack pointer and deallocate our copy of `n`. You can see this in action by the comment in the above code block.
