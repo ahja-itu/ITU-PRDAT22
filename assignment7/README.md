@@ -390,3 +390,65 @@ $ java Machine ex8.5.out
 
 Ran 0.022 seconds
 ```
+
+## Exercise 8.6
+
+
+We compile the program:
+
+```fs
+> open ParseAndComp;;
+> compile "ex8.6";;
+val it : Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; GETBP; CSTI 0; ADD; LDI; DUP;
+   CSTI 3; EQ; NOT; IFZERO "L2"; DUP; CSTI 2; EQ; NOT; IFZERO "L3"; DUP;
+   CSTI 1; EQ; NOT; IFZERO "L4"; Label "L2"; CSTI 30; PRINTI; INCSP -1;
+   INCSP 0; GOTO "L5"; Label "L3"; CSTI 20; PRINTI; INCSP -1; INCSP 0;
+   GOTO "L5"; Label "L4"; CSTI 10; PRINTI; INCSP -1; INCSP 0; GOTO "L5";
+   Label "L5"; INCSP -1; CSTI 10; PRINTC; INCSP -1; INCSP 0; RET 0]
+
+> #q;;
+```
+
+And run it:
+
+```sh
+$ java Machinetrace ex8.6.out 2
+[ ]{0: LDARGS}
+[ 2 ]{1: CALL 1 5}
+[ 4 -999 2 ]{5: GETBP}
+[ 4 -999 2 2 ]{6: CSTI 0}
+[ 4 -999 2 2 0 ]{8: ADD}
+[ 4 -999 2 2 ]{9: LDI}
+[ 4 -999 2 2 ]{10: DUP}
+[ 4 -999 2 2 2 ]{11: CSTI 3}
+[ 4 -999 2 2 2 3 ]{13: EQ}
+[ 4 -999 2 2 0 ]{14: NOT}
+[ 4 -999 2 2 1 ]{15: IFZERO 31}
+[ 4 -999 2 2 ]{17: DUP}
+[ 4 -999 2 2 2 ]{18: CSTI 2}
+[ 4 -999 2 2 2 2 ]{20: EQ}
+[ 4 -999 2 2 1 ]{21: NOT}
+[ 4 -999 2 2 0 ]{22: IFZERO 40}
+[ 4 -999 2 2 ]{40: CSTI 20}
+[ 4 -999 2 2 20 ]{42: PRINTI}
+20 [ 4 -999 2 2 20 ]{43: INCSP -1}
+[ 4 -999 2 2 ]{45: INCSP 0}
+[ 4 -999 2 2 ]{47: GOTO 58}
+[ 4 -999 2 2 ]{58: INCSP -1}        # Here*
+[ 4 -999 2 ]{60: CSTI 10}
+[ 4 -999 2 10 ]{62: PRINTC}
+
+[ 4 -999 2 10 ]{63: INCSP -1}
+[ 4 -999 2 ]{65: INCSP 0}
+[ 4 -999 2 ]{67: RET 0}
+[ 2 ]{4: STOP}
+
+Ran 0.065 seconds
+$ java Machine ex8.6.out 2
+20
+
+Ran 0.019 seconds
+```
+
+*Here: 
