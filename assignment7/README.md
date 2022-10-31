@@ -285,3 +285,108 @@ With this interaction, we take note of:
 
 - Conditionals use labels to go through the program, since execution can be split up into many possible paths.
 - Conditionals can leverage labels and a "top-to-botttom" execution to either skip an intermediate label (L8, skipping L7), or make sure that constants are put unto the stack such that `if` statements execute as intended.
+
+
+## Exercise 8.5
+
+We made the following changes to the abstract syntax, lexer, parser and compiler:
+
+```diff
+diff --git a/assignment7/MicroC/Absyn.fs b/assignment7/MicroC/Absyn.fs
+index fd965be..00286eb 100644
+--- a/assignment7/MicroC/Absyn.fs
++++ b/assignment7/MicroC/Absyn.fs
+@@ -25,6 +25,7 @@ and expr =
+   | Andalso of expr * expr           (* Sequential and              *)
+   | Orelse of expr * expr            (* Sequential or               *)
+   | Call of string * expr list       (* Function call f(...)        *)
++  | TernaryOp of expr * expr * expr  (* e1 ? e2 : e3                *)
+                                                                    
+ and access =                                                       
+   | AccVar of string                 (* Variable access        x    *) 
+diff --git a/assignment7/MicroC/CLex.fsl b/assignment7/MicroC/CLex.fsl
+index 3a1eff0..7427390 100644
+--- a/assignment7/MicroC/CLex.fsl
++++ b/assignment7/MicroC/CLex.fsl
+@@ -68,6 +68,8 @@ rule Token = parse
+   | "&&"            { SEQAND }                     
+   | "&"             { AMP }                     
+   | "!"             { NOT }                     
++  | "?"             { QUESTIONMARK }
++  | ":"             { COLON }
+   | '('             { LPAR }
+   | ')'             { RPAR }
+   | '{'             { LBRACE }
+diff --git a/assignment7/MicroC/CPar.fsy b/assignment7/MicroC/CPar.fsy
+index 953d778..a373495 100644
+--- a/assignment7/MicroC/CPar.fsy
++++ b/assignment7/MicroC/CPar.fsy
+@@ -18,11 +18,13 @@ let nl = CstI 10
+ %token PLUS MINUS TIMES DIV MOD
+ %token EQ NE GT LT GE LE
+ %token NOT SEQOR SEQAND
++%token COLON QUESTIONMARK
+ %token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP INC DEC
+ %token EOF
+ 
+ %right ASSIGN             /* lowest precedence */
+ %nonassoc PRINT
++%left QUESTIONMARK COLON
+ %left SEQOR
+ %left SEQAND
+ %left EQ NE 
+@@ -136,6 +138,7 @@ ExprNotAccess:
+   | Expr LE    Expr                     { Prim2("<=", $1, $3) }
+   | Expr SEQAND Expr                    { Andalso($1, $3)     }
+   | Expr SEQOR  Expr                    { Orelse($1, $3)      }
++  | Expr QUESTIONMARK Expr COLON Expr   { TernaryOp($1, $3, $5) }
+ ;
+ 
+ AtExprNotAccess:
+diff --git a/assignment7/MicroC/Comp.fs b/assignment7/MicroC/Comp.fs
+index 0c172e1..b91eef5 100644
+--- a/assignment7/MicroC/Comp.fs
++++ b/assignment7/MicroC/Comp.fs
+@@ -208,6 +208,14 @@ and cExpr (e : expr) (varEnv : varEnv) (funEnv : funEnv) : instr list =
+       @ cExpr e2 varEnv funEnv
+       @ [GOTO labend; Label labtrue; CSTI 1; Label labend]
+     | Call(f, es) -> callfun f es varEnv funEnv
++    | TernaryOp(e1, e2, e3) ->
++        let labelFalse  = newLabel()
++        let labelEnd = newLabel()
++
++        cExpr e1 varEnv funEnv    @ [IFZERO labelFalse]
++        @ cExpr e2 varEnv funEnv  @ [GOTO labelEnd]
++        @ [Label labelFalse]      @ cExpr e3 varEnv funEnv
++        @ [Label labelEnd]
+```
+
+We wrote a Micro-C program to test the ternary operator:
+
+```c
+void main() {
+	int n;
+	n = 1 < 0 ? 10 : 20;
+	print n;
+	println;
+}
+```
+
+Which compiled to the following symbolic bytecode and terminated with the given output:
+
+```fsi
+> open ParseAndComp;;
+> compile "ex8.5";;
+val it : Machine.instr list =
+  [LDARGS; CALL (0, "L1"); STOP; Label "L1"; INCSP 1; GETBP; CSTI 0; ADD;
+   CSTI 1; CSTI 0; LT; IFZERO "L2"; CSTI 10; GOTO "L3"; Label "L2"; CSTI 20;
+   Label "L3"; STI; INCSP -1; GETBP; CSTI 0; ADD; LDI; PRINTI; INCSP -1;
+   CSTI 10; PRINTC; INCSP -1; INCSP -1; RET -1]
+```
+
+```sh
+$ java Machine ex8.5.out
+20
+
+Ran 0.022 seconds
+```
