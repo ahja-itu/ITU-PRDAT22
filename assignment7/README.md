@@ -393,6 +393,87 @@ Ran 0.022 seconds
 
 ## Exercise 8.6
 
+We added the following code:
+
+```diff
+diff --git a/assignment7/MicroC/Absyn.fs b/assignment7/MicroC/Absyn.fs
+index 00286eb..8dc9da2 100644
+--- a/assignment7/MicroC/Absyn.fs
++++ b/assignment7/MicroC/Absyn.fs
+@@ -38,6 +38,7 @@ and stmt =
+   | Expr of expr                     (* Expression statement   e;   *)
+   | Return of expr option            (* Return from method          *)
+   | Block of stmtordec list          (* Block: grouping and scope   *)
++  | Switch of expr * (int * stmt) list (* :) *)
+                                                                    
+ and stmtordec =                                                    
+   | Dec of typ * string              (* Local variable declaration  *)
+diff --git a/assignment7/MicroC/CLex.fsl b/assignment7/MicroC/CLex.fsl
+index 7427390..8b0aaaf 100644
+--- a/assignment7/MicroC/CLex.fsl
++++ b/assignment7/MicroC/CLex.fsl
+@@ -28,6 +28,8 @@ let keyword s =
+     | "true"    -> CSTBOOL 1
+     | "void"    -> VOID 
+     | "while"   -> WHILE         
++    | "switch"  -> SWITCH
++    | "case"    -> CASE
+     | _         -> NAME s
+  
+ let cEscape s = 
+diff --git a/assignment7/MicroC/CPar.fsy b/assignment7/MicroC/CPar.fsy
+index a373495..e67b38e 100644
+--- a/assignment7/MicroC/CPar.fsy
++++ b/assignment7/MicroC/CPar.fsy
+@@ -19,6 +19,7 @@ let nl = CstI 10
+ %token EQ NE GT LT GE LE
+ %token NOT SEQOR SEQAND
+ %token COLON QUESTIONMARK
++%token SWITCH CASE
+ %token LPAR RPAR LBRACE RBRACE LBRACK RBRACK SEMI COMMA ASSIGN AMP INC DEC
+ %token EOF
+ 
+@@ -91,6 +92,9 @@ StmtOrDecSeq:
+   | Vardec SEMI StmtOrDecSeq            { Dec (fst $1, snd $1) :: $3 }
+ ;
+ 
++
++
++
+ Stmt: 
+     StmtM                               { $1 }
+   | StmtU                               { $1 }
+@@ -109,6 +113,12 @@ StmtU:
+     IF LPAR Expr RPAR StmtM ELSE StmtU  { If($3, $5, $7)       }
+   | IF LPAR Expr RPAR Stmt              { If($3, $5, Block []) }
+   | WHILE LPAR Expr RPAR StmtU          { While($3, $5)        }
++  | SWITCH LPAR Expr RPAR LBRACE Cases RBRACE { Switch($3, $6) }
++;
++
++Cases:
++   /* empty */                          { [] } 
++  | CASE CSTINT COLON Block Cases       { ($2, $4) :: $5 }
+ ;
+ 
+ Expr: 
+diff --git a/assignment7/MicroC/Comp.fs b/assignment7/MicroC/Comp.fs
+index b91eef5..62726e9 100644
+--- a/assignment7/MicroC/Comp.fs
++++ b/assignment7/MicroC/Comp.fs
+@@ -144,6 +144,15 @@ let rec cStmt stmt (varEnv : varEnv) (funEnv : funEnv) : instr list =
+       [RET (snd varEnv - 1)]
+     | Return (Some e) -> 
+       cExpr e varEnv funEnv @ [RET (snd varEnv)]
++    | Switch(e, cases) ->
++      let casesAndLabels = List.map (fun c -> (newLabel(), c) ) cases
++      let endLabel = newLabel()
++
++      cExpr e varEnv funEnv
++      @ List.fold (fun acc (label, (i, block)) -> acc @ [DUP; CSTI i; EQ; NOT; IFZERO label] ) [] casesAndLabels
++      @ List.fold (fun acc (label, (i, block)) -> acc @ [Label label] @ cStmt block varEnv funEnv @ [GOTO endLabel]) [] casesAndLabels
++      @ [Label endLabel; INCSP -1]
++      
+```
 
 We compile the program:
 
