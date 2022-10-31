@@ -257,3 +257,31 @@ The abstraction with using a while loop is also costly, since overhead is added 
 The `ex8.out` program also does a lot of redundant computation such as `CSTI 0; ADD`.
 
 #### `ex13.c`
+
+The symbolic bytecode from `ex13.c` looks like this:
+
+```fs
+[LDARGS; CALL (1, "L1"); STOP; 
+Label "L1"; INCSP 1; GETBP; CSTI 1; ADD; CSTI 1889; STI; INCSP -1; GOTO "L3"; // main(n)
+Label "L2"; GETBP; CSTI 1; ADD; GETBP;
+   CSTI 1; ADD; LDI; CSTI 1; ADD; STI; INCSP -1; // y = y + 1;
+   GETBP; CSTI 1; ADD; LDI; // loads y from memory
+   CSTI 4; MOD; CSTI 0; EQ; IFZERO "L7"; // left side of `&&`: `y % 4 == 0`
+   GETBP; CSTI 1; ADD; LDI; CSTI 100;
+   MOD; CSTI 0; EQ; NOT; IFNZRO "L9"; GETBP; CSTI 1; ADD; LDI; CSTI 400; MOD;
+   CSTI 0; EQ; GOTO "L8"; 
+Label "L9"; CSTI 1; 
+Label "L8"; GOTO "L6";
+Label "L7"; CSTI 0; 
+Label "L6"; IFZERO "L4"; GETBP; CSTI 1; ADD; LDI;
+   PRINTI; INCSP -1; GOTO "L5"; 
+Label "L4"; INCSP 0; 
+Label "L5"; INCSP 0;
+Label "L3"; GETBP; CSTI 1; ADD; LDI; GETBP; CSTI 0; ADD; LDI; LT;
+   IFNZRO "L2"; INCSP -1; RET 0]
+```
+
+With this interaction, we take note of:
+
+- Conditionals use labels to go through the program, since execution can be split up into many possible paths.
+- Conditionals can leverage labels and a "top-to-botttom" execution to either skip an intermediate label (L8, skipping L7), or make sure that constants are put unto the stack such that `if` statements execute as intended.
