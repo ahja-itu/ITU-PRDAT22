@@ -189,3 +189,59 @@ A report of the same:
 
 ![](./plc_9.2.ii-report.png)
 
+#### iii
+
+We wrote a really bad program that simply merges a lot of arrays:
+
+```cs
+using System;
+
+public class MergeArrays
+{
+    public static void Main(String[] args)
+    {
+        Console.WriteLine("\nPress return to begin.");
+        Console.In.Read();
+
+        Console.WriteLine("Merging 100000 arrays\n");
+        mergeNArrays(100000);
+    }
+
+    private static int[] mergeNArrays(int n)
+    {
+        int[] result = new int[1];
+
+        for (int i = 0; i < n; i++)
+        {
+            result = mergeArrays(result, new int[i]);
+        }
+
+        return result;
+    }
+
+    private static int[] mergeArrays(int[] first, int[] second)
+    {
+        int[] res = new int[first.Length + second.Length];
+
+        for (int i = 0; i < first.Length; i++)
+        {
+            res[i] = first[i];
+        }
+
+        for (int i = 0; i < second.Length; i++)
+        {
+            res[i + first.Length] = second[i];
+        }
+
+        return res;
+    }
+}
+```
+
+The chart for monitoring the process in perfmon can be seen below. We monitored how much time was used in GC and how much memory was used.
+
+![](./plc_9.2.iii-chart.png)
+
+The process regularly spends 50-60% of the time doing garbage collection. Therefore our program is successfully very garbage.
+
+Below the chart, you can see that the program peaked at using 170 million bytes, which corresponds to 0.17 gigabytes.
