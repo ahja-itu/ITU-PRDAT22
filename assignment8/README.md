@@ -145,3 +145,26 @@ public static void SelectionSort(int[]);
         54: goto          2    // Go to instruction 2
         57: return             // return
 ```
+
+### PLC 9.2
+
+#### i
+
+```sh
+$ csc /o StringConcatSpeed.cs
+Microsoft (R) Visual C# Compiler version 3.9.0-6.21124.20 (db94f4cc)
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+$ mono StringConcatSpeed.exe
+Initialization: Building array of small strings
+
+Concatenate using StringBuilder:
+Result length: 168894;    time:   0.000 sec
+
+
+Press return to continue...
+
+
+Concatenate using repeated string concatenation:
+Result length: 168894;    time:   1.353 sec
+```
