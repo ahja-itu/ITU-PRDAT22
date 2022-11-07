@@ -168,3 +168,24 @@ Press return to continue...
 Concatenate using repeated string concatenation:
 Result length: 168894;    time:   1.353 sec
 ```
+
+#### ii
+
+Perfmon was run using a Windows machine with the following specs:
+
+- OS: Windows version 10.0.220000 (Windows 11)
+- Processor: i9-12900KF
+- `csc` version: 4.1.0-5.22165.10 (e555772d)
+
+Line chart showing percent of time spent in GC:
+
+![](./plc_9.2.ii-chart.png)
+
+Histogram showing the same:
+
+![](./plc_9.2.ii-histogram.png)
+
+A report of the same:
+
+![](./plc_9.2.ii-report.png)
+
