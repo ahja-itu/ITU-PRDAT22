@@ -87,3 +87,61 @@ We have used the following link as reference: <https://en.wikipedia.org/wiki/Lis
 	IL_0038:  ret           // return
     } // end of method Selsort::SelectionSort
 ```
+
+#### ii
+
+We have used the following link as reference: <https://en.wikipedia.org/wiki/List_of_Java_bytecode_instructions>.
+
+```jvmbytecode
+public static void SelectionSort(int[]);
+    descriptor: ([I)V
+    flags: (0x0009) ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=4, locals=4, args_size=1
+         0: iconst_0           // Push 0 onto the stack
+         1: istore_1           // Store 0 in variable index 1 (int i)
+         2: iload_1            // Get i
+         3: aload_0            // Load a reference onto the stack from variable location 0 (int[] arr, the first argument)
+         4: arraylength        // Get length of arr
+         5: if_icmpge     57   // If i >= arr.length, go to 57 (return)
+         8: iload_1            // Get i
+         9: istore_2           // Save i to location 2 (int least)
+        10: iload_1            // Get i
+        11: iconst_1           // Push 1 onto the stack
+        12: iadd               // Calculate i + 1
+        13: istore_3           // Store i + 1 in location 3 (int j)
+        14: iload_3            // Get j
+        15: aload_0            // Get arr
+        16: arraylength        // Get arr.length
+        17: if_icmpge     37   // If j >= arr.length, go to 37
+        // If j < arr.length
+        20: aload_0            // Get arr
+        21: iload_3            // Get j
+        22: iaload             // Get arr[j]
+        23: aload_0            // Get arr
+        24: iload_2            // Get least
+        25: iaload             // Get arr[least]
+        26: if_icmpge     31   // If arr[j] >= arr[least], to to 31
+        // If arr[j] < arr[least]:
+        29: iload_3            // Get j
+        30: istore_2           // Set least = j
+        31: iinc          3, 1 // Increment value in location 3 with 1 (j++)
+        34: goto          14   // Go to 14
+        37: aload_0            // Get arr
+        38: iload_1            // Get i
+        39: iaload             // Look up arr[i]
+        40: istore_3           // Set j = arr[i]
+        41: aload_0            // Get arr
+        42: iload_1            // Get i
+        43: aload_0            // Get arr
+        44: iload_2            // Get least
+        45: iaload             // Get arr[least]
+        46: iastore            // arr[i] = arr[least]
+        47: aload_0            // Get arr
+        48: iload_2            // Get least
+        49: iload_3            // Get j
+        50: iastore            // Set arr[least] = j
+        51: iinc          1, 1 // Increment value in location 1 with 1 (i = i + 1)
+        54: goto          2    // Go to instruction 2
+        57: return             // return
+```
