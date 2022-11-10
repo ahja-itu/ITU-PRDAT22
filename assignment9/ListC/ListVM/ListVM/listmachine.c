@@ -471,9 +471,26 @@ void initheap() {
   freelist = &heap[0];
 }
 
+void mark(word* block) {
+  int len = Length(block[0]);
+
+  // TODO: We need to finish colouring the blocks correctly
+  Paint(block[0], Grey);
+}
+
 void markPhase(word s[], word sp) {
   printf("marking ...\n");
-  // TODO: Actually mark something
+
+  // Traverse the stack and call mark() on all non NIL references
+  for (int i = 0; i <= sp; i++) {
+    // We don't mark NIL references or integers
+    if (s[i] != 0 || IsInt(s[i])) {
+      continue;
+    }
+
+    word* p = (word*)Untag(s[i]);
+    mark(p);
+  }
 }
 
 void sweepPhase() {
