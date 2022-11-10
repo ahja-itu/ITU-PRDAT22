@@ -271,7 +271,7 @@ int execcode(word p[], word s[], word iargs[], int iargc, int /* boolean */ trac
     case CSTI:
       s[sp + 1] = Tag(p[pc++]); sp++; break;
     case ADD:
-      s[sp - 1] = Tag(Untag(s[sp - 1]) + Untag(s[sp])); sp--; break;
+      s[sp - 1]= Tag(Untag(s[sp - 1]) + Untag(s[sp])); sp--; break;
     case SUB:
       s[sp - 1] = Tag(Untag(s[sp - 1]) - Untag(s[sp])); sp--; break;
     case MUL:
@@ -496,19 +496,19 @@ word* allocate(unsigned int tag, uword length, word s[], word sp) {
     while (free != 0) {
       word rest = Length(free[0]) - length;
       if (rest >= 0) {
-	if (rest == 0) // Exact fit with free block
-	  *prev = (word*)free[1];
-	else if (rest == 1) { // Create orphan (unusable) block
-	  *prev = (word*)free[1];
-	  free[length + 1] = mkheader(0, rest - 1, Blue);
-	}
-	else { // Make previous free block point to rest of this block
-	  *prev = &free[length + 1];
-	  free[length + 1] = mkheader(0, rest - 1, Blue);
-	  free[length + 2] = free[1];
-	}
-	free[0] = mkheader(tag, length, White);
-	return free;
+	      if (rest == 0) // Exact fit with free block
+	        *prev = (word*)free[1];
+	      else if (rest == 1) { // Create orphan (unusable) block
+	        *prev = (word*)free[1];
+	        free[length + 1] = mkheader(0, rest - 1, Blue);
+	      }
+	      else { // Make previous free block point to rest of this block
+	        *prev = &free[length + 1];
+	        free[length + 1] = mkheader(0, rest - 1, Blue);
+	        free[length + 2] = free[1];
+	      }
+	      free[0] = mkheader(tag, length, White);
+	      return free;
       }
       prev = (word**)&free[1];
       free = (word*)free[1];
