@@ -511,11 +511,18 @@ void sweepPhase() {
   word* addr = heap;
   word* freeAddr = freelist;
   // Find the first free location in the free list
-  while (freeAddr[1] != 0) {
+  
+  printf("Finding first free addr\n");
+  while (freeAddr != 0) {
     int length = Length(*freeAddr);
     if (freeAddr < heap || afterHeap < freeAddr + length + 1) {
-      // skid i bukserne og lad det tQrre
+      // skid i bukserne og lad det tørre
       printf("mommy\n");
+    }
+ 
+    // If the next block is pointing to a NIL reference, we stop
+    if (freeAddr[1] == 0) {
+      break;
     }
 
     // Go to the next block in the freelist
@@ -526,9 +533,14 @@ void sweepPhase() {
     word header = *addr;
     int block_length = Length(header);
     int block_colour = Color(header);
+
     switch (block_colour) {
       case White:
-        freeAddr[1] = (word) addr;
+        if (freeAddr != 0) {
+          freeAddr[1] = (word) addr;
+        } else {
+          freelist = addr;
+        }
         freeAddr = addr;
         addr[1] = 0; // Point next block of addr to NIL
         addr[0] = Paint(header, Blue);
@@ -539,7 +551,6 @@ void sweepPhase() {
       case Blue:
         break;
       case Grey:
-        printf("Unexpected grey block\n");
         break;
     }
     addr += block_length + 1;
