@@ -472,10 +472,21 @@ void initheap() {
 }
 
 void mark(word* block) {
-  int len = Length(block[0]);
+  // Checking to see if we're discovering a cyclic reference and
+  // come back to a block we've already coloured. We'll end the
+  // recursion here, in that case.
+  if (Color(block[0]) != White) {
+    return;
+  } 
 
-  // TODO: We need to finish colouring the blocks correctly
-  Paint(block[0], Grey);
+  // If the type of block is a cons cell
+  if (BlockTag(block[0]) == CONSTAG) {
+    // Get a reference to the first element in the cons cell
+    word* p_next = (word*) Untag(block[1]);
+    mark(p_next);
+  }
+
+  Paint(block[0], Black);
 }
 
 void markPhase(word s[], word sp) {
@@ -496,6 +507,43 @@ void markPhase(word s[], word sp) {
 void sweepPhase() {
   printf("sweeping ...\n");
   // TODO: Actually sweep
+
+  word* addr = heap;
+  word* freeAddr = freelist;
+  // Find the first free location in the free list
+  while (freeAddr[1] != 0) {
+    int length = Length(*freeAddr);
+    if (freeAddr < heap || afterHeap < freeAddr + length + 1) {
+      // skid i bukserne og lad det tQrre
+      printf("mommy\n");
+    }
+
+    // Go to the next block in the freelist
+    freeAddr = (word*) freeAddr[1];
+  }
+
+  while (addr < afterHeap) {
+    word header = *addr;
+    int block_length = Length(header);
+    int block_colour = Color(header);
+    switch (block_colour) {
+      case White:
+        freeAddr[1] = (word) addr;
+        freeAddr = addr;
+        addr[1] = 0; // Point next block of addr to NIL
+        addr[0] = Paint(header, Blue);
+        break;
+      case Black:
+        addr[0] = Paint(header, White);
+        break;
+      case Blue:
+        break;
+      case Grey:
+        printf("Unexpected grey block\n");
+        break;
+    }
+    addr += block_length + 1;
+  }
 }
 
 void collect(word s[], word sp) {
