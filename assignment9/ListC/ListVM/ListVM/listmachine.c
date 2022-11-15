@@ -483,7 +483,6 @@ void mark(word* block) {
 
   // If the type of block is a cons cell
   if (BlockTag(block[0]) == CONSTAG) {
-
     if (!IsInt(block[1]) && block[1] != 0) {
       mark((word*) block[1]);
     }
