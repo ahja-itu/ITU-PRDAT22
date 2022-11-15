@@ -483,11 +483,15 @@ void mark(word* block) {
 
   // If the type of block is a cons cell
   if (BlockTag(block[0]) == CONSTAG) {
-    // Get a reference to the first element in the cons cell
-    word* p_next = (word*) Untag(block[1]);
-    mark(p_next);
-  }
 
+    if (!IsInt(block[1]) && block[1] != 0) {
+      mark((word*) block[1]);
+    }
+
+    if (!IsInt(block[2]) && block[2] != 0) {
+      mark((word*) block[2]);
+    }
+  }
 }
 
 void markPhase(word s[], word sp) {
@@ -500,7 +504,7 @@ void markPhase(word s[], word sp) {
       continue;
     }
 
-    word* p = (word*)Untag(s[i]);
+    word* p = (word*) s[i];
     mark(p);
   }
 }
