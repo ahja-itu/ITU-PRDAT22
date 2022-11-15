@@ -479,6 +479,8 @@ void mark(word* block) {
     return;
   } 
 
+  block[0] = Paint(block[0], Black);
+
   // If the type of block is a cons cell
   if (BlockTag(block[0]) == CONSTAG) {
     // Get a reference to the first element in the cons cell
@@ -486,7 +488,6 @@ void mark(word* block) {
     mark(p_next);
   }
 
-  block[0] = Paint(block[0], Black);
 }
 
 void markPhase(word s[], word sp) {
