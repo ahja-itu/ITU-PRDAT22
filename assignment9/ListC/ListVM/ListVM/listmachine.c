@@ -486,7 +486,7 @@ void mark(word* block) {
     mark(p_next);
   }
 
-  Paint(block[0], Black);
+  block[0] = Paint(block[0], Black);
 }
 
 void markPhase(word s[], word sp) {
