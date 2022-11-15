@@ -500,7 +500,7 @@ void markPhase(word s[], word sp) {
   // Traverse the stack and call mark() on all non NIL references
   for (int i = 0; i <= sp; i++) {
     // We don't mark NIL references or integers
-    if (s[i] != 0 || IsInt(s[i])) {
+    if (s[i] == 0 || IsInt(s[i])) {
       continue;
     }
 
