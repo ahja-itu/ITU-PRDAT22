@@ -479,9 +479,10 @@ void mark(word* block) {
     return;
   } 
 
+  // Paint the current block black to indicate that we have visited it.
   block[0] = Paint(block[0], Black);
 
-  // If the type of block is a cons cell
+  // If the type of block is a cons cell, we recursively mark its car and cdr
   if (BlockTag(block[0]) == CONSTAG) {
     if (!IsInt(block[1]) && block[1] != 0) {
       mark((word*) block[1]);
@@ -494,11 +495,8 @@ void mark(word* block) {
 }
 
 void markPhase(word s[], word sp) {
-  printf("marking ...\n");
-
-  // Traverse the stack and call mark() on all non NIL references
+  // Traverse the stack and call mark() on all non-NIL references
   for (int i = 0; i <= sp; i++) {
-    // We don't mark NIL references or integers
     if (s[i] == 0 || IsInt(s[i])) {
       continue;
     }
@@ -509,22 +507,18 @@ void markPhase(word s[], word sp) {
 }
 
 void sweepPhase() {
-  printf("sweeping ...\n");
-  // TODO: Actually sweep
-
   word* addr = heap;
   word* freeAddr = freelist;
-  // Find the first free location in the free list
-  
-  printf("Finding first free addr\n");
+
+  // Find the last item in the free list
   while (freeAddr != 0) {
     int length = Length(*freeAddr);
     if (freeAddr < heap || afterHeap < freeAddr + length + 1) {
-      // skid i bukserne og lad det tørre
-      printf("mommy\n");
+      printf("freelist reference somehow got out of the heap\n");
+      exit(1);
     }
  
-    // If the next block is pointing to a NIL reference, we stop
+    // If the next block is pointing to a NIL reference, we are at the end
     if (freeAddr[1] == 0) {
       break;
     }
@@ -535,18 +529,22 @@ void sweepPhase() {
 
   while (addr < afterHeap) {
     word header = *addr;
-    int block_length = Length(header);
-    int block_colour = Color(header);
 
-    switch (block_colour) {
+    switch (Color(header)) {
       case White:
         if (freeAddr != 0) {
+          // Append the block to the end of the free list
           freeAddr[1] = (word) addr;
         } else {
+          // It can happen that the free list is empty, in which case freeAddr
+          // is still a NIL reference. Thus we make the newly freed block the
+          // new first item of the free list.
           freelist = addr;
         }
+
         freeAddr = addr;
-        addr[1] = 0; // Point next block of addr to NIL
+        // Point next block of addr to NIL (because addr is now the last item)
+        addr[1] = 0; 
         addr[0] = Paint(header, Blue);
         break;
       case Black:
@@ -557,7 +555,8 @@ void sweepPhase() {
       case Grey:
         break;
     }
-    addr += block_length + 1;
+
+    addr += Length(header) + 1;
   }
 }
 
