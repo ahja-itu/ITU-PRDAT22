@@ -519,6 +519,11 @@ void sweepPhase() {
         addr[0] = Paint(header, Blue);
         addr[1] = (word) freelist;
         freelist = addr;
+
+        word next_block_header = addr[Length(header) + 1];
+        if (Color(next_block_header) == White) {
+          addr[0] = mkheader(0, Length(header) + Length(next_block_header) + 1, Blue);
+        }
         break;
       case Black:
         // If the block is black, it is reachable from the stack, so we reset
@@ -530,7 +535,7 @@ void sweepPhase() {
         break;
     }
 
-    addr += Length(header) + 1;
+    addr += Length(*addr) + 1;
   }
 }
 
