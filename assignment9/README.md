@@ -90,51 +90,25 @@ index 7966319..908f994 100644
  
  void sweepPhase() {
 +  word* addr = heap;
-+  word* freeAddr = freelist;
-+
-+  // Find the last item in the free list
-+  while (freeAddr != 0) {
-+    int length = Length(*freeAddr);
-+    if (freeAddr < heap || afterHeap < freeAddr + length + 1) {
-+      printf("freelist reference somehow got out of the heap\n");
-+      exit(1);
-+    }
-+ 
-+    // If the next block is pointing to a NIL reference, we are at the end
-+    if (freeAddr[1] == 0) {
-+      break;
-+    }
-+
-+    // Go to the next block in the freelist
-+    freeAddr = (word*) freeAddr[1];
-+  }
 +
 +  while (addr < afterHeap) {
 +    word header = *addr;
 +
 +    switch (Color(header)) {
 +      case White:
-+        if (freeAddr != 0) {
-+          // Append the block to the end of the free list
-+          freeAddr[1] = (word) addr;
-+        } else {
-+          // It can happen that the free list is empty, in which case freeAddr
-+          // is still a NIL reference. Thus we make the newly freed block the
-+          // new first item of the free list.
-+          freelist = addr;
-+        }
-+
-+        freeAddr = addr;
-+        // Point next block of addr to NIL (because addr is now the last item)
-+        addr[1] = 0; 
++        // If the block is white, it is not reachable from the stack, so we
++        // mark it as blue (i.e. free) and make it the new head of the freelist.
 +        addr[0] = Paint(header, Blue);
++        addr[1] = (word) freelist;
++        freelist = addr;
 +        break;
 +      case Black:
++        // If the block is black, it is reachable from the stack, so we reset
++        // it to white so it's ready for the next GC and move on.
 +        addr[0] = Paint(header, White);
 +        break;
 +      case Blue:
-+        break;
-+      case Grey:
++        // If the block is blue, it is already on the freelist, so we move on.
 +        break;
 +    }
 +
