@@ -98,6 +98,10 @@ let rec eval (e : expr) (cont : cont) (econt : econt) =
           match i % 2 with
           | 0 -> cont (Int i) econt
           | _ -> econt ()
+        | ("multiples", Int i) ->
+          let rec loop n  =
+            cont (Int (i * n)) (fun () -> loop (n + 1))
+          loop 1
         | _ -> Str "unknown prim1"
       ) econt
     | And(e1, e2) -> 
