@@ -266,5 +266,26 @@ We validate our changes:
 2 4 6 val it: value = Int 0
 ```
 
+#### IV
 
+We made the following changes to impement the *Multiples* function
+
+```diff
+diff --git a/assignment10/Cont/Icon.fs b/assignment10/Cont/Icon.fs
+index 635874f..962e48c 100644
+--- a/assignment10/Cont/Icon.fs
++++ b/assignment10/Cont/Icon.fs
+@@ -98,6 +98,10 @@ let rec eval (e : expr) (cont : cont) (econt : econt) =
+           match i % 2 with
+           | 0 -> cont (Int i) econt
+           | _ -> econt ()
++        | ("multiples", Int i) ->
++          let rec loop n  =
++            cont (Int (i * n)) (fun () -> loop (n + 1))
++          loop 1
+         | _ -> Str "unknown prim1"
+       ) econt
+     | And(e1, e2) -> 
+
+```
 
