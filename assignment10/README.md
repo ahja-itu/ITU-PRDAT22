@@ -90,3 +90,32 @@ The function outputs the reversed list:
 > revc [1; 2; 3] id;;
 val it: int list = [3; 2; 1]
 ```
+
+#### II
+
+Running the code
+
+```fs
+> revc xs (fun v -> v @ v);;
+val it: int list = [7; 5; 2; 7; 5; 2]
+```
+
+We see that the list gets reversed, but the list is duplicated and appended to itself.
+
+#### III
+
+We implemented the tail-recursive function `revi` using an accumulator to reverse the given list:
+
+```fs
+let rec revi lst acc =
+    match lst with
+    | []      -> acc
+    | x :: xs -> revi xs (x :: acc)
+```
+
+We run the function:
+
+```fsi
+> revi xs [];;
+val it: int list = [7; 5; 2]
+```

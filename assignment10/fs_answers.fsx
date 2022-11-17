@@ -17,3 +17,10 @@ let rec revc lst k =
     match lst with
     | []      -> k []
     | x :: xs -> revc xs (fun vs -> k(vs @ [x]))
+
+// Exercise 10.2 III
+let rec revi lst acc =
+    match lst with
+    | []      -> acc
+    | x :: xs -> revi xs (x :: acc)
+    
