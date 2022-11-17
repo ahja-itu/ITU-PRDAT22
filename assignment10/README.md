@@ -1,4 +1,4 @@
-# Assignment 8
+# Assignment 10
 
 Authors: adbo, aljb and ahja
 
@@ -8,7 +8,7 @@ We recommend reading this Markdown page on [GitHub](https://github.com/andreaswa
 
 ## Solutions
 
-### 10.1
+### 11.1
 
 #### I
 
@@ -70,7 +70,7 @@ val it: int = 0
 
 The relation between the CPS and tail-recursive accumulator functions is that the tail-recursive accumulator `acc` is a simpler function relative to the continuation function `k`.
 
-## 10.2
+## 11.2
 
 
 ### I
