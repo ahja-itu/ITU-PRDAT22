@@ -119,3 +119,70 @@ We run the function:
 > revi xs [];;
 val it: int list = [7; 5; 2]
 ```
+
+### Exercise 11.3
+
+We implemented `prodc` in the CSP. 
+
+```fs
+let rec prodc lst k =
+    match lst with
+    | [] -> k 1
+    | x :: xs -> prodc xs (fun v -> k(x * v))
+```
+
+Running it produces the following output:
+
+```fsi
+> prodc [1; 2; 3; 4; 5; 6; 7] id;;
+val it: int = 5040
+
+> prodc [] id;;
+val it: int = 1
+```
+
+### 11.4
+
+We created an optimized version of `prodc` named `prodc'`:
+
+```fs
+let rec prodc' lst k =
+    let rec aux lst' k' =
+        match lst' with
+        | [] -> k' 1
+        | x :: _ when x = 0 -> k 0
+        | x :: xs -> aux xs (fun v -> k'(x * v))
+
+    aux lst k
+```
+
+This outputs the following results:
+
+```fsi
+> prodc' [1; 2; 3] id;;
+val it: int = 6
+
+> prodc' [1; 0; 2; 3] id;;
+val it: int = 0
+```
+
+We also implemented the tail-recursive function `prodi`:
+
+
+```fs
+let rec prodi lst acc =
+    match lst with
+    | [] -> acc
+    | x :: _ when x = 0 -> 0
+    | x :: xs -> prodi xs (acc * x)
+```
+
+We ran it and it produced the following output:
+
+```fsi
+> prodi [1; 2; 3] 1;;
+val it: int = 6
+
+> prodi [1; 0; 2; 3] 1;;
+val it: int = 0
+```
