@@ -45,3 +45,27 @@ val it: int = 6
 We see that the calculated length of the function is doubled, as the base continuation function doubles the result, which is then *propagated* throughout the counting, which results in the length calculation returning the double of the actual length.
 
 #### III
+
+We implemented the tail-recursive list length function `lenny`:
+
+```fs
+let rec lenny lst acc =
+    match lst with
+    | [] -> acc
+    | _ :: xs -> lenny xs ((+) acc 1)
+```
+
+Running it produces the following output:
+
+```fsi
+> let xs = [2; 5; 7];;
+val xs: int list = [2; 5; 7]
+
+> lenny xs 0;;
+val it: int = 3
+
+> lenny [] 0;;
+val it: int = 0
+```
+
+
