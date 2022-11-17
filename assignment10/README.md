@@ -70,4 +70,23 @@ val it: int = 0
 
 The relation between the CPS and tail-recursive accumulator functions is that the tail-recursive accumulator `acc` is a simpler function relative to the continuation function `k`.
 
+## 10.2
 
+
+### I
+
+We've implemented the CPS style function for reversing a list:
+
+```fs
+let rec revc lst k =
+    match lst with
+    | []      -> k []
+    | x :: xs -> revc xs (fun vs -> k(vs @ [x]))
+```
+
+The function outputs the reversed list:
+
+```fsi
+> revc [1; 2; 3] id;;
+val it: int list = [3; 2; 1]
+```
