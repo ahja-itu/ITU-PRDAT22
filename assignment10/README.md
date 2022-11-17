@@ -68,4 +68,6 @@ val it: int = 3
 val it: int = 0
 ```
 
+The relation between the CPS and tail-recursive accumulator functions is that the tail-recursive accumulator `acc` is a simpler function relative to the continuation function `k`.
+
 
