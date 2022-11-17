@@ -186,3 +186,33 @@ val it: int = 6
 > prodi [1; 0; 2; 3] 1;;
 val it: int = 0
 ```
+
+### Exercise 11.8
+
+#### I
+
+We wrote an expression that writes `3 5 7 9`:
+
+```fsi
+> run (Every(Write(Prim("+", CstI 1, (Prim("*", CstI 2, FromTo(1, 4)))))));; 
+3 5 7 9 val it: value = Int 0
+```
+
+We wrote the problem of crating the abstract syntax with informal textual syntax:
+
+```txt
+1. (2 to 4) * 10 -> 20 30 40
+2. ((2 to 4) * 10) + (1 to 2) -> 21 22 31 32 41 42
+```
+
+We implemented the MicroIcon abstract syntax to produce the output `21 22 31 32 41 42`:
+
+```fsi
+> run (Every(Write(Prim("+", Prim("*", FromTo(2, 4), CstI 10), FromTo(1, 2)))));;
+21 22 31 32 41 42 val it: value = Int 0
+```
+
+#### II
+
+
+
