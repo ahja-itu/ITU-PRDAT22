@@ -112,6 +112,12 @@ let rec addCST i C =
     | (_, IFZERO lab :: C1) -> C1
     | (0, IFNZRO lab :: C1) -> C1
     | (_, IFNZRO lab :: C1) -> addGOTO lab C1
+    | (x, CSTI y :: EQ :: C1)                -> addCST (if x = y then 1 else 0) C1
+    | (x, CSTI y :: EQ :: NOT :: C1)         -> addCST (if x <> y then 1 else 0) C1
+    | (x, CSTI y :: LT :: C1)                -> addCST (if x < y then 1 else 0) C1
+    | (x, CSTI y :: LT :: NOT :: C1)         -> addCST (if x >= y then 1 else 0) C1
+    | (x, CSTI y :: SWAP :: LT :: C1)        -> addCST (if x > y then 1 else 0) C1
+    | (x, CSTI y :: SWAP :: LT :: NOT :: C1) -> addCST (if x <= y then 1 else 0) C1
     | _                     -> CSTI i :: C
 
 (* ------------------------------------------------------------------- *)
