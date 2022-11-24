@@ -10,7 +10,7 @@ We recommend reading this Markdown page on [GitHub](https://github.com/andreaswa
 
 ### PLC 12.1
 
-We added the `addIFZERO` and `addIFNZERO` helper functions, and called it from the appropriate locations
+We added the `addIFZERO` and `addIFNZERO` helper functions, and called it from the appropriate locations.
 
 ```diff
 diff --git a/assignment11/MicroC/Contcomp.fs b/assignment11/MicroC/Contcomp.fs
@@ -107,19 +107,83 @@ index d37440c..48ccc7e 100644
 +           (addIFNZERO labtrue 
 +             (cExpr e2 varEnv funEnv (addJump jumpend C2)))
      | Call(f, es) -> callfun f es varEnv funEnv C
- 
- (* Generate code to access variable, dereference pointer or index array: *)
 ```
 
-Testing optimization of compiler with `ex16.c`, we see that `GETBP; LDI; IFNZRO L2;` has been generated instead of `GETBP; LDI; IFZERO L3; GOTO L2;`
+Testing optimization of compiler with `ex16.c`, we see that `GETBP; LDI; IFNZRO L2;` has been generated instead of `GETBP; LDI; IFZERO L3; GOTO L2;`.
 
 ```fsi
 $ make run
-# ...
+(* ... *)
+
 > open ParseAndContcomp;;
+
 > contCompileToFile (fromFile "ex16.c") "ex16.out";;
 val it: Machine.instr list =
   [LDARGS; CALL (1, "L1"); STOP; Label "L1"; GETBP; LDI; IFNZRO "L2";
    Label "L3"; CSTI 1111; PRINTI; INCSP -1; Label "L2"; CSTI 2222; PRINTI;
    RET 1]
+```
+
+### PLC 12.2
+
+We added comparison-based optimizations to the `addCST` helper function.
+
+```diff
+diff --git a/assignment11/MicroC/Contcomp.fs b/assignment11/MicroC/Contcomp.fs
+index 48ccc7e..5e9d89d 100644
+--- a/assignment11/MicroC/Contcomp.fs
++++ b/assignment11/MicroC/Contcomp.fs
+@@ -112,6 +112,12 @@ let rec addCST i C =
+     | (_, IFZERO lab :: C1) -> C1
+     | (0, IFNZRO lab :: C1) -> C1
+     | (_, IFNZRO lab :: C1) -> addGOTO lab C1
++    | (x, CSTI y :: EQ :: C1)                -> addCST (if x = y then 1 else 0) C1
++    | (x, CSTI y :: EQ :: NOT :: C1)         -> addCST (if x <> y then 1 else 0) C1
++    | (x, CSTI y :: LT :: C1)                -> addCST (if x < y then 1 else 0) C1
++    | (x, CSTI y :: LT :: NOT :: C1)         -> addCST (if x >= y then 1 else 0) C1
++    | (x, CSTI y :: SWAP :: LT :: C1)        -> addCST (if x > y then 1 else 0) C1
++    | (x, CSTI y :: SWAP :: LT :: NOT :: C1) -> addCST (if x <= y then 1 else 0) C1
+     | _                     -> CSTI i :: C
+```
+
+We tested each of the comparison-based optimizations. Note that all of the results has been compiled to code that either unconditionally prints or does nothing. (All comparisons are between the values 11 and 22, and will print 33 if true)
+
+```fsi
+$ make run
+(* ... *)
+
+> open ParseAndContcomp;;
+
+// Equal to
+> contCompileToFile (fromFile "eq.c") "eq.out";;    
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; Label "L2"; RET 0]
+
+// Not equal to
+> contCompileToFile (fromFile "neq.c") "neq.out";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; CSTI 33; PRINTI; RET 1;
+   Label "L2"; RET 0]
+
+// Less than
+> contCompileToFile (fromFile "lt.c") "lt.out";; 
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; CSTI 33; PRINTI; RET 1;
+   Label "L2"; RET 0]
+
+// Less than or equal to
+> contCompileToFile (fromFile "lteq.c") "lteq.out";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; CSTI 33; PRINTI; RET 1;
+   Label "L2"; RET 0]
+
+// Greater than
+> contCompileToFile (fromFile "gt.c") "gt.out";;    
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; Label "L2"; RET 0]
+
+// Greater than or equal to
+> contCompileToFile (fromFile "gteq.c") "gteq.out";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; Label "L2"; RET 0]
 ```
