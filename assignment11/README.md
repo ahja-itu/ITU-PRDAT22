@@ -187,3 +187,54 @@ val it: Machine.instr list =
 val it: Machine.instr list =
   [LDARGS; CALL (1, "L1"); STOP; Label "L1"; Label "L2"; RET 0]
 ```
+
+### PLC 12.3
+
+We added the conditional operator to the abstract syntax, and extended the continuation-based micro-C compiler. We used the optimizations from addIFZERO, makeJump and addLabel.
+
+```diff
+diff --git a/assignment11/MicroC/Absyn.fs b/assignment11/MicroC/Absyn.fs
+index da8f60c..455fb5a 100644
+--- a/assignment11/MicroC/Absyn.fs
++++ b/assignment11/MicroC/Absyn.fs
+@@ -23,6 +23,7 @@ and expr =
+   | Andalso of expr * expr           (* Sequential and              *)
+   | Orelse of expr * expr            (* Sequential or               *)
+   | Call of string * expr list       (* Function call f(...)        *)
++  | Cond of expr * expr * expr       (* Conditional e1 ? e2 : e3    *)
+
+diff --git a/assignment11/MicroC/Contcomp.fs b/assignment11/MicroC/Contcomp.fs
+index 5e9d89d..b5e92ae 100644
+--- a/assignment11/MicroC/Contcomp.fs
++++ b/assignment11/MicroC/Contcomp.fs
+@@ -316,6 +316,13 @@ and cExpr (e : expr) (varEnv : varEnv) (funEnv : funEnv) (C : instr list) : inst
+            (addIFNZERO labtrue 
+              (cExpr e2 varEnv funEnv (addJump jumpend C2)))
+     | Call(f, es) -> callfun f es varEnv funEnv C
++    | Cond(e1, e2, e3) ->
++      let (jumpend, C1) = makeJump C
++      let (l1, C2) = cExpr e3 varEnv funEnv C1 |> addLabel
++      addJump jumpend C2
++      |> cExpr e2 varEnv funEnv
++      |> addIFZERO l1
++      |> cExpr e1 varEnv funEnv
+```
+
+Testing this on the following two examples produces this result:
+
+`1 ? 1111 : 2222`
+
+```fsi
+> cExpr (Cond(CstI 1, CstI 1111, CstI 2222)) ([], 0) [] [];; 
+val it: Machine.instr list =
+  [CSTI 1111; GOTO "L0"; Label "L1"; CSTI 2222; Label "L0"]
+```
+
+`0 ? 1111 : 2222`
+
+```fsi
+> cExpr (Cond(CstI 0, CstI 1111, CstI 2222)) ([], 0) [] [];;
+val it: Machine.instr list = [Label "L3"; CSTI 2222; Label "L2"]
+```
+
+Note how the conditional has been optimized away.
