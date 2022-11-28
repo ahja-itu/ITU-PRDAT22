@@ -241,7 +241,40 @@ Note how the conditional has been optimized away.
 
 ### PLC 12.4
 
-(New)
+We simplified the implementation of the logical operators && and ||, like so:
+
+```diff
+diff --git a/assignment11/MicroC/CPar.fsy b/assignment11/MicroC/CPar.fsy
+index 746b0b0..6956ea4 100644
+--- a/assignment11/MicroC/CPar.fsy
++++ b/assignment11/MicroC/CPar.fsy
+@@ -131,8 +131,8 @@ ExprNotAccess:
+   | Expr LT    Expr                     { Prim2("<",  $1, $3) }
+   | Expr GE    Expr                     { Prim2(">=", $1, $3) }
+   | Expr LE    Expr                     { Prim2("<=", $1, $3) }
+-  | Expr SEQAND Expr                    { Andalso($1, $3)     }
+-  | Expr SEQOR  Expr                    { Orelse($1, $3)      }
++  | Expr SEQAND Expr                    { Cond($1, $3, CstI 0) }
++  | Expr SEQOR  Expr                    { Cond($1, CstI 1, $3) }
+ ;
+
+```
+
+This is what `ex13.c` compiled to prior to the change:
+
+```fsi
+> contCompileToFile (fromFile "ex13.c") "ex13.out";;
+val it: Machine.instr list =
+  [LDARGS; CALL (1, "L1"); STOP; Label "L1"; INCSP 1; GETBP; CSTI 1; ADD;
+   CSTI 1889; STI; INCSP -1; GOTO "L3"; Label "L2"; GETBP; CSTI 1; ADD; GETBP;
+   CSTI 1; ADD; LDI; CSTI 1; ADD; STI; INCSP -1; GETBP; CSTI 1; ADD; LDI;
+   CSTI 4; MOD; IFNZRO "L3"; GETBP; CSTI 1; ADD; LDI; CSTI 100; MOD;
+   IFNZRO "L4"; GETBP; CSTI 1; ADD; LDI; CSTI 400; MOD; IFNZRO "L3";
+   Label "L4"; GETBP; CSTI 1; ADD; LDI; PRINTI; INCSP -1; Label "L3"; GETBP;
+   CSTI 1; ADD; LDI; GETBP; LDI; LT; IFNZRO "L2"; RET 1]
+```
+
+This is what it compiled to afterwards:
 
 ```fsi
 > contCompileToFile (fromFile "ex13.c") "ex13.out";;
@@ -254,4 +287,22 @@ val it: Machine.instr list =
    CSTI 400; MOD; NOT; GOTO "L4"; Label "L5"; CSTI 0; Label "L4"; IFZERO "L3";
    GETBP; CSTI 1; ADD; LDI; PRINTI; INCSP -1; Label "L3"; GETBP; CSTI 1; ADD;
    LDI; GETBP; LDI; LT; IFNZRO "L2"; RET 1]
+```
+
+Below is a diff from the old compilation to the new one.
+
+```diff
+val it: Machine.instr list =
+   [LDARGS; CALL (1, "L1"); STOP; Label "L1"; INCSP 1; GETBP; CSTI 1; ADD;
+    CSTI 1889; STI; INCSP -1; GOTO "L3"; Label "L2"; GETBP; CSTI 1; ADD; GETBP;
+    CSTI 1; ADD; LDI; CSTI 1; ADD; STI; INCSP -1; GETBP; CSTI 1; ADD; LDI;
+-   CSTI 4; MOD; IFNZRO "L3"; GETBP; CSTI 1; ADD; LDI; CSTI 100; MOD;
+-   IFNZRO "L4"; GETBP; CSTI 1; ADD; LDI; CSTI 400; MOD; IFNZRO "L3";
+-   Label "L4"; GETBP; CSTI 1; ADD; LDI; PRINTI; INCSP -1; Label "L3"; GETBP;
+-   CSTI 1; ADD; LDI; GETBP; LDI; LT; IFNZRO "L2"; RET 1]
++   CSTI 4; MOD; IFNZRO "L5"; GETBP; CSTI 1; ADD; LDI; CSTI 100; MOD;
++   IFZERO "L6"; CSTI 1; GOTO "L4"; Label "L6"; GETBP; CSTI 1; ADD; LDI;
++   CSTI 400; MOD; NOT; GOTO "L4"; Label "L5"; CSTI 0; Label "L4"; IFZERO "L3";
++   GETBP; CSTI 1; ADD; LDI; PRINTI; INCSP -1; Label "L3"; GETBP; CSTI 1; ADD;
++   LDI; GETBP; LDI; LT; IFNZRO "L2"; RET 1]
 ```
